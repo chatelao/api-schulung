@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: Hybrid Enterprise Order Integration API
+  version: 1.0.0
+  description: >
+    Kombiniert OIDC-geschuetztes REST-Order-Management (Petstore3),
+    mTLS-Gateway-Audit (tls-proxy:8443) und nachgelagerte SOAP/WSS-Abrechnung.
+servers:
+  - url: http://localhost:8080/api/v3
+    description: Petstore3 Order Backend
+  - url: https://localhost:8443
+    description: mTLS Security Gateway (tls-proxy)
+
+components:
+  securitySchemes:
+    oidcAuth:
+      type: openIdConnect
+      openIdConnectUrl: http://localhost:8081/realms/api-lab/.well-known/openid-configuration
+    mtlsAuth:
+      type: mutualTLS
+      description: Client-Zertifikat aus lab/certs/out/client.crt
+    oauth2M2M:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: http://localhost:8081/realms/api-lab/protocol/openid-connect/token
+          scopes:
+            orders:write: Auftraege uebermitteln
+
+paths:
+  /store/order:
+    post:
+      operationId: placeOrder
+      summary: Auftrag im REST-Frontend anlegen
+      security:
+        - oidcAuth: [openid]
+        - oauth2M2M: [orders:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, petId, quantity, status]
+              properties:
+                id:
+                  type: integer
+                petId:
+                  type: integer
+                quantity:
+                  type: integer
+                status:
+                  type: string
+                  enum: [placed, approved, delivered]
+      responses:
+        "200":
+          description: Auftrag angelegt
+
+  /headers:
+    get:
+      operationId: verifyMtlsGateway
+      summary: Kombiniertes mTLS + Bearer-Audit am Gateway
+      security:
+        - mtlsAuth: []
+          oauth2M2M: [orders:write]
+      responses:
+        "200":
+          description: mTLS- und Bearer-Header bestaetigt

@@ -1,0 +1,31 @@
+info:
+  name: 01 OIDC Discovery Metadata
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: "{{kcBaseUrl}}/.well-known/openid-configuration"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: after-response
+      code: |-
+        bru.setVar("tokenEndpoint", res.body.token_endpoint);
+        bru.setVar("introspectEndpoint", res.body.introspection_endpoint);
+        bru.setVar("revokeEndpoint", res.body.revocation_endpoint);
+    - type: tests
+      code: |-
+        test("OIDC Discovery liefert gueltige Endpunkte", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.issuer).to.include("/realms/api-lab");
+          expect(res.body.jwks_uri).to.be.a("string");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

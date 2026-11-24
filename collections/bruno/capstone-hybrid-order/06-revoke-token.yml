@@ -1,0 +1,34 @@
+info:
+  name: 06 Revoke Token (RFC 7009) & Introspect Check
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: "{{revokeEndpoint}}"
+  body:
+    type: form-urlencoded
+    data:
+      - name: token
+        value: "{{capToken}}"
+      - name: token_type_hint
+        value: access_token
+  auth:
+    type: basic
+    username: "{{m2mClientId}}"
+    password: "{{m2mClientSecret}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("Token sauber widerrufen (RFC 7009 HTTP 200)", function() {
+          expect(res.status).to.equal(200);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

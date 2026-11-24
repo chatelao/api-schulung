@@ -1,0 +1,122 @@
+name: Verify API-Schulung Labs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  static-hygiene-and-syntax:
+    name: Statische Syntax- & Secret-Hygiene-Pruefung
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shell-Skripte mit bash -n pruefen
+        run: |
+          for f in 00-setup/*.sh lab/certs/*.sh scripts/curl/*.sh 04-projekte/capstone-hybrid-order/*.sh; do
+            bash -n "$f"
+          done
+
+      - name: Sortenreines OpenCollection YAML & keine getrackten Secrets pruefen
+        run: |
+          test -z "$(find collections/bruno -name '*.bru')"
+          if git ls-files | grep -qE '(\.env$|\.key$|\.pem$|\.crt$|\.pfx$|\.p12$|\.jks$|client-cert-config\.json$)'; then
+            echo "Verbotene Secret- oder Schluesseldatei in Git gefunden!"
+            exit 1
+          fi
+
+      - name: Python-, YAML-, JSON- und XML-Syntax pruefen
+        run: |
+          python3 -m pip install --quiet pyyaml lxml
+          python3 -m py_compile lab/soap-service/app.py
+          python3 -c "
+          import glob, json, yaml
+          from lxml import etree
+          for jf in glob.glob('lab/**/*.json', recursive=True) + glob.glob('collections/**/*.json', recursive=True):
+              json.load(open(jf))
+          for yf in glob.glob('collections/bruno/**/*.yml', recursive=True) + ['lab/docker-compose.yml', '01-module/M06-openapi-security-schemes/openapi-security-demo.yaml', '04-projekte/capstone-hybrid-order/openapi-hybrid-order.yaml']:
+              yaml.safe_load(open(yf))
+          for xf in glob.glob('collections/soapui/*.xml') + glob.glob('lab/soap-service/*.wsdl') + glob.glob('01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/*.xml'):
+              etree.parse(xf)
+          print('Alle Syntax-Checks bestanden.')
+          "
+
+  integration-lab-tests:
+    name: Docker-Labor, bru import & bru run Integrationstests
+    needs: static-hygiene-and-syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node.js & @usebruno/cli installieren
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Bruno CLI installieren
+        run: npm install -g @usebruno/cli && bru --version
+
+      - name: Labor-Umgebung, Zertifikate und Docker-Stack starten
+        run: |
+          cp lab/.env.example lab/.env
+          ./lab/certs/generate-certs.sh
+          docker compose -f lab/docker-compose.yml --env-file lab/.env up -d --build
+          ./00-setup/smoke-test.sh
+
+      - name: OpenAPI Import via bru import pruefen
+        run: |
+          bru import openapi \
+            --source http://localhost:8080/api/v3/openapi.json \
+            --output /tmp/ci-petstore-import \
+            --collection-name "CI Petstore" \
+            --collection-format=opencollection
+          test -f /tmp/ci-petstore-import/opencollection.yml
+          test -z "$(find /tmp/ci-petstore-import -name '*.bru')"
+
+      - name: curl-Lab-Skripte ausfuehren
+        run: |
+          ./scripts/curl/m01-petstore-crud.sh
+          ./scripts/curl/m03-soap-call.sh
+          ./scripts/curl/m05-auth-hygiene.sh
+          ./scripts/curl/m07-mtls-test.sh
+          ./scripts/curl/m09-pkce-manual.sh
+          ./scripts/curl/m10-client-credentials.sh
+          ./scripts/curl/m11-oidc-discovery-jwt.sh
+          ./scripts/curl/m12-introspect-revoke.sh
+
+      - name: Bruno Collections (Petstore, Auth/mTLS, Client Credentials, Security Audit, Capstone) ausfuehren
+        run: |
+          set -a && source lab/.env && set +a
+          mkdir -p reports
+
+          (cd collections/bruno/petstore-lab && bru run -r --env local --reporter-junit ../../../reports/petstore.xml)
+
+          cp collections/bruno/auth-hygiene-lab/client-cert-config.example.json collections/bruno/auth-hygiene-lab/client-cert-config.json
+          (cd collections/bruno/auth-hygiene-lab && bru run -r --env local \
+            --cacert ../../../lab/certs/out/ca.crt \
+            --client-cert-config ./client-cert-config.json \
+            --env-var "basicUser=${HTTPBIN_BASIC_USER}" \
+            --env-var "basicPass=${HTTPBIN_BASIC_PASS}" \
+            --env-var "apiKey=${HTTPBIN_API_KEY}" \
+            --env-var "bearerToken=${HTTPBIN_BEARER_TOKEN}" \
+            --reporter-skip-headers Authorization X-Api-Key \
+            --reporter-junit ../../../reports/auth-hygiene.xml)
+
+          (cd collections/bruno/oauth-client-credentials-lab && bru run -r --env local \
+            --env-var "clientSecret=${KC_M2M_CLIENT_SECRET}" \
+            --reporter-skip-headers Authorization \
+            --reporter-junit ../../../reports/oauth-m2m.xml)
+
+          (cd collections/bruno/security-audit-suite && bru run -r --env ci \
+            --env-var "m2mClientSecret=${KC_M2M_CLIENT_SECRET}" \
+            --reporter-skip-headers Authorization \
+            --reporter-junit ../../../reports/security-audit.xml)
+
+          ./04-projekte/capstone-hybrid-order/verify-capstone.sh
+
+      - name: Labor-Container bei Abschluss stoppen
+        if: always()
+        run: docker compose -f lab/docker-compose.yml down -v

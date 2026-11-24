@@ -1,0 +1,46 @@
+info:
+  name: 05 SOAP CreateOrder with Chained ID
+  type: http
+  seq: 5
+http:
+  method: POST
+  url: "{{soapUrl}}"
+  headers:
+    - name: Content-Type
+      value: text/xml; charset=utf-8
+    - name: SOAPAction
+      value: "\"http://api-schulung.local/orders/v1/CreateOrder\""
+  body:
+    type: xml
+    data: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                     xmlns:tns="http://api-schulung.local/orders/v1">
+        <soap:Header/>
+        <soap:Body>
+          <tns:CreateOrderRequest>
+            <tns:customerId>CUST-CAP-{{restOrderId}}</tns:customerId>
+            <tns:itemCode>HYBRID-ORDER</tns:itemCode>
+            <tns:quantity>2</tns:quantity>
+            <tns:netAmount>99.50</tns:netAmount>
+          </tns:CreateOrderRequest>
+        </soap:Body>
+      </soap:Envelope>
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("SOAP CreateOrder liefert CREATED", function() {
+          expect(res.status).to.equal(200);
+          expect(String(res.body)).to.include("CREATED");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

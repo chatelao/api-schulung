@@ -1,0 +1,12 @@
+{
+  "enabled": true,
+  "certs": [
+    {
+      "domain": "localhost",
+      "type": "cert",
+      "certFilePath": "../../../lab/certs/out/client.crt",
+      "keyFilePath": "../../../lab/certs/out/client.key",
+      "passphrase": ""
+    }
+  ]
+}

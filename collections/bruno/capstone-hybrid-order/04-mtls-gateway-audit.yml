@@ -1,0 +1,28 @@
+info:
+  name: 04 mTLS + Bearer Gateway Verification
+  type: http
+  seq: 4
+http:
+  method: GET
+  url: "{{mtlsGatewayUrl}}/headers"
+  auth:
+    type: bearer
+    token: "{{capToken}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("mTLS und Bearer-Header am Gateway verifiziert", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.headers["X-Client-Cert-Verify"][0]).to.equal("SUCCESS");
+          expect(res.body.headers["Authorization"][0]).to.include("Bearer ");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

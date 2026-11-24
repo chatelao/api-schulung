@@ -1,0 +1,15 @@
+name: local
+variables:
+  - name: kcBaseUrl
+    value: http://localhost:8081/realms/api-lab
+  - name: petstoreUrl
+    value: http://localhost:8080/api/v3
+  - name: mtlsGatewayUrl
+    value: https://localhost:8443
+  - name: soapUrl
+    value: http://localhost:9000/soap
+  - name: m2mClientId
+    value: m2m-service-client
+  - name: m2mClientSecret
+    value: ""
+    secret: true

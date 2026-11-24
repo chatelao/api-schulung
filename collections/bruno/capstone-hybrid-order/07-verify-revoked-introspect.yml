@@ -1,0 +1,33 @@
+info:
+  name: 07 Verify Revoked Token Inactive (RFC 7662)
+  type: http
+  seq: 7
+http:
+  method: POST
+  url: "{{introspectEndpoint}}"
+  body:
+    type: form-urlencoded
+    data:
+      - name: token
+        value: "{{capToken}}"
+  auth:
+    type: basic
+    username: "{{m2mClientId}}"
+    password: "{{m2mClientSecret}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("Widerrufenes Capstone-Token meldet active=false", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.active).to.equal(false);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

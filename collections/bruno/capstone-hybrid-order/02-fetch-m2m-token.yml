@@ -1,0 +1,36 @@
+info:
+  name: 02 Fetch M2M Access Token
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: "{{tokenEndpoint}}"
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: client_credentials
+  auth:
+    type: basic
+    username: "{{m2mClientId}}"
+    password: "{{m2mClientSecret}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: after-response
+      code: |-
+        bru.setVar("capToken", res.body.access_token);
+    - type: tests
+      code: |-
+        test("M2M Token erfolgreich bezogen", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.access_token).to.be.a("string").and.not.empty;
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5
