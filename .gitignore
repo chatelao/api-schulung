@@ -1,0 +1,51 @@
+# Umgebungsvariablen und Secrets (NIEMALS versionieren)
+.env
+.env.local
+.env.*.local
+**/.env
+!**/.env.example
+
+# Zertifikate, private Schluessel und Keystores
+*.key
+*.pem
+*.crt
+*.csr
+*.srl
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+lab/certs/out/
+lab/certs/generated/
+
+# Lokale Client-Zertifikats-Konfigurationen (nur .example.json versionieren)
+client-cert-config.json
+**/client-cert-config.json
+!**/client-cert-config.example.json
+
+# Generierte Tokens, Cookies und temporaere curl-Configs
+*.token
+*.jwt
+cookies.txt
+.netrc
+curl-auth.conf
+
+# Testberichte und CLI-Ausgaben
+reports/
+junit*.xml
+test-results/
+bruno-report.*
+
+# SoapUI temporaere Dateien und Logs
+soapui.log*
+global-groovy.log*
+error.log*
+*.bak
+
+# Node.js / Bruno CLI / OS
+node_modules/
+.DS_Store
+Thumbs.db
+*.swp
+*~
