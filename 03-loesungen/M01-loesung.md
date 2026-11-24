@@ -1,43 +1,18 @@
-# Musterlösung M01: HTTP-Fundament & `curl` ohne Magie
+# Musterlösung M01: HTTP-Fundament & erste API-Requests (Swagger UI & Bruno)
 
-## Lösung Aufgabe A: Echo & Redirect-Analyse
+## Lösung Aufgabe A: Echo & Redirects
+1. In Bruno unter `GET http://localhost:8180/anything/kurs` mit Header `X-Kurs-Teilnehmer: api-student` erscheint der Header in der JSON-Antwort unter `"headers": { "X-Kurs-Teilnehmer": ["api-student"] }`.
+2. Bruno folgt den Weiterleitungen von `/redirect/2` standardmässig automatisch und endet bei **`200 OK`**.
 
-```bash
-# 1. Custom-Header pruefen
-curl -sS -H "X-Kurs-Teilnehmer: api-student" \
-  http://localhost:8180/anything/kurs | jq '.headers'
+## Lösung Aufgabe B: Fehlercodes verstehen
+- **`415 Unsupported Media Type`:** `POST http://localhost:8080/api/v3/pet` mit Body-Typ **Text** (`Content-Type: text/plain`) — der Server erwartet JSON oder XML.
+- **`404 Not Found`:** `GET http://localhost:8080/api/v3/pet/99999999` — diese ID existiert nicht.
+- **`405 Method Not Allowed`:** `DELETE http://localhost:8080/api/v3/pet` — `DELETE` ist nur mit angehängter ID (`/pet/{petId}`) erlaubt.
 
-# 2. Redirect-Kette ohne -L (einmaliger 302) vs. mit -L (3x 302 -> 200 OK)
-curl -i http://localhost:8180/redirect/3
-curl -sSL -D - -o /dev/null http://localhost:8180/redirect/3 | grep -E "^(HTTP/|Location:)"
-```
+## Lösung Aufgabe C: CRUD-Ablauf in Swagger UI (`http://localhost:8080`)
+1. `POST /pet` mit `"id": 2026`, `"name": "Luna"`, `"status": "available"` → **`200 OK`**.
+2. `GET /pet/2026` → liefert `"name": "Luna"`.
+3. `PUT /pet` mit `"id": 2026`, `"status": "sold"` → **`200 OK`**.
+4. `DELETE /pet/2026` → **`200 OK`**; ein erneutes `GET /pet/2026` liefert **`404 Not Found`**.
 
-## Lösung Aufgabe B: Gezielte Fehlercodes
-
-```bash
-# 415 Unsupported Media Type (Content-Type passt nicht zu application/json / application/xml)
-curl -sS -o /dev/null -w "415-Test -> HTTP %{http_code}\n" \
-  -X POST http://localhost:8080/api/v3/pet \
-  -H "Content-Type: text/plain" \
-  -d '{"id": 999}'
-
-# 404 Not Found
-curl -sS -o /dev/null -w "404-Test -> HTTP %{http_code}\n" \
-  http://localhost:8080/api/v3/pet/99999999
-
-# 405 Method Not Allowed (DELETE auf Collection-Endpunkt /pet ohne ID)
-curl -sS -o /dev/null -w "405-Test -> HTTP %{http_code}\n" \
-  -X DELETE http://localhost:8080/api/v3/pet
-```
-
-## Lösung Aufgabe C: Vollständiges CRUD-Skript
-
-Siehe ausführbare Referenzdatei: [scripts/curl/m01-petstore-crud.sh](../scripts/curl/m01-petstore-crud.sh).
-
-## Lösung Bonus-Challenge D: Timing-Messung
-
-```bash
-curl -sS -o /dev/null \
-  -w '{"http_code":%{http_code},"dns":%{time_namelookup},"connect":%{time_connect},"ttfb":%{time_starttransfer},"total":%{time_total}}\n' \
-  "http://localhost:8080/api/v3/pet/findByStatus?status=available" | jq .
-```
+*(Für die automatisierte Bash-/curl-Variante siehe [Advanced-Musterlösungen](../advanced/loesungen.md).)*

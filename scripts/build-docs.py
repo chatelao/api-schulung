@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Synchronisiert die Kurs-Markdown-Dateien nach docs/ fuer MkDocs (GitHub Pages & Read the Docs)
-und generiert optional docs/ci-results.md aus JUnit-XML-Reports."""
+"""Synchronisiert den gesamten Lehrgang (Basis + Advanced) nach docs/ fuer Read the Docs / MkDocs
+und erzeugt optional interactive/js/data-ci-results.js sowie docs/ci-results.md aus JUnit-XML-Reports."""
 
 from __future__ import annotations
 
 import argparse
-import glob
+import json
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -14,6 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
+INTERACTIVE_CI_JS = ROOT / "interactive" / "js" / "data-ci-results.js"
 GITHUB_BLOB_BASE = "https://github.com/chatelao/api-schulung/blob/main"
 
 MODULE_MAP = {
@@ -29,6 +30,18 @@ MODULE_MAP = {
     "M10-oauth-praxis-pkce-m2m": "M10",
     "M11-oidc-discovery-jwks-userinfo": "M11",
     "M12-token-lifecycle-audits-cicd": "M12",
+}
+
+ADVANCED_MAP = {
+    "advanced/README.md": "advanced/index.md",
+    "advanced/A01-http-curl-jq.md": "advanced/A01.md",
+    "advanced/A02-soap-curl-databinary.md": "advanced/A02.md",
+    "advanced/A03-secret-hygiene-curl.md": "advanced/A03.md",
+    "advanced/A04-tls-mtls-openssl-curl.md": "advanced/A04.md",
+    "advanced/A05-oauth21-pkce-oidc-curl.md": "advanced/A05.md",
+    "advanced/A06-token-lifecycle-bruno-cli-cicd.md": "advanced/A06.md",
+    "advanced/uebungen.md": "advanced/uebungen.md",
+    "advanced/loesungen.md": "advanced/loesungen.md",
 }
 
 ROOT_DOC_MAP = {
@@ -59,10 +72,13 @@ def resolve_to_docs_or_github(src_file: Path, target_rel: str, dest_file: Path) 
     except ValueError:
         return target_rel + anchor
 
-    # Map known curriculum markdown targets into docs/
     target_doc: Path | None = None
     if repo_rel in ROOT_DOC_MAP:
         target_doc = DOCS / ROOT_DOC_MAP[repo_rel]
+    elif repo_rel in ADVANCED_MAP:
+        target_doc = DOCS / ADVANCED_MAP[repo_rel]
+    elif repo_rel == "advanced":
+        target_doc = DOCS / "advanced/index.md"
     elif repo_rel == "00-setup/README.md":
         target_doc = DOCS / "setup/m00-setup.md"
     elif repo_rel == "04-projekte/capstone-hybrid-order/README.md":
@@ -84,7 +100,6 @@ def resolve_to_docs_or_github(src_file: Path, target_rel: str, dest_file: Path) 
         rel_link = os.path.relpath(target_doc, start=dest_file.parent).replace(os.sep, "/")
         return rel_link + anchor
 
-    # Non-markdown repo files (collections, scripts, lab, yaml specs) link directly to GitHub
     return f"{GITHUB_BLOB_BASE}/{repo_rel}{anchor}"
 
 
@@ -108,15 +123,8 @@ def copy_doc(src_rel: str, dest_rel: str) -> None:
     dest.write_text(rewritten, encoding="utf-8")
 
 
-def generate_ci_results(reports_dir: Path | None, git_sha: str, run_id: str) -> None:
-    dest = DOCS / "ci-results.md"
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    rows: list[str] = []
-    total_tests = 0
-    total_failures = 0
-
+def collect_junit_results(reports_dir: Path | None) -> list[dict]:
+    suites_data: list[dict] = []
     if reports_dir and reports_dir.exists():
         for xml_path in sorted(reports_dir.glob("*.xml")):
             tree = ET.parse(xml_path)
@@ -124,15 +132,34 @@ def generate_ci_results(reports_dir: Path | None, git_sha: str, run_id: str) -> 
             suites = [root] if root.tag == "testsuite" else list(root.findall(".//testsuite"))
             suite_tests = sum(int(s.attrib.get("tests", 0)) for s in suites)
             suite_failures = sum(int(s.attrib.get("failures", 0)) + int(s.attrib.get("errors", 0)) for s in suites)
-            suite_time = sum(float(s.attrib.get("time", 0.0)) for s in suites)
-            total_tests += suite_tests
-            total_failures += suite_failures
+            suite_time = round(sum(float(s.attrib.get("time", 0.0)) for s in suites), 2)
             status = "PASS" if suite_failures == 0 and suite_tests > 0 else "FAIL"
-            rows.append(
-                f"| `{xml_path.stem}` | {suite_tests} | {suite_failures} | {suite_time:.2f}s | **{status}** |"
+            suites_data.append(
+                {
+                    "name": xml_path.stem,
+                    "tests": suite_tests,
+                    "failures": suite_failures,
+                    "duration_s": suite_time,
+                    "status": status,
+                }
             )
+    return suites_data
 
-    if rows:
+
+def generate_ci_outputs(reports_dir: Path | None, git_sha: str, run_id: str) -> None:
+    dest = DOCS / "ci-results.md"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    suites_data = collect_junit_results(reports_dir)
+    total_tests = sum(s["tests"] for s in suites_data)
+    total_failures = sum(s["failures"] for s in suites_data)
+
+    if suites_data:
+        rows = [
+            f"| `{s['name']}` | {s['tests']} | {s['failures']} | {s['duration_s']:.2f}s | **{s['status']}** |"
+            for s in suites_data
+        ]
         summary_table = (
             "| Bruno Collection / Suite | Testfälle | Fehler | Dauer | Status |\n"
             "| :--- | :---: | :---: | :---: | :---: |\n"
@@ -144,7 +171,7 @@ def generate_ci_results(reports_dir: Path | None, git_sha: str, run_id: str) -> 
             "| Bereich | Verifikation | Status |\n"
             "| :--- | :--- | :---: |\n"
             "| Labor-Stack (`smoke-test.sh`) | Petstore3, go-httpbin, tls-proxy (TLS/mTLS), soap-service, Keycloak 26.8.2, mock-oauth2 | **PASS** |\n"
-            "| `curl`-Skripte (`m01`–`m12`) | 8 ausführbare Skripte (CRUD, SOAP, Auth-Hygiene, mTLS, PKCE, M2M, OIDC, Introspect/Revoke) | **PASS** |\n"
+            "| Advanced `curl`-Skripte (`m01`–`m12`) | 8 ausführbare Skripte (CRUD, SOAP, Auth-Hygiene, mTLS, PKCE, M2M, OIDC, Introspect/Revoke) | **PASS** |\n"
             "| Bruno Collections (`bru run`) | `petstore-lab`, `auth-hygiene-lab`, `oauth-client-credentials-lab`, `security-audit-suite`, `capstone-hybrid-order` | **PASS** |\n"
             "| WS-Security XML-Signatur | `CreateSecureOrder` (`Timestamp` + `UsernameToken Digest` + `XML Signature`) | **PASS** |"
         )
@@ -157,13 +184,13 @@ def generate_ci_results(reports_dir: Path | None, git_sha: str, run_id: str) -> 
 
     md = f"""# CI/CD Verifikationsergebnisse
 
-Diese Seite dokumentiert den automatisierten Prüflauf des Workflows **Verify API-Schulung Labs**.
+Diese Seite dokumentiert den automatisierten Prüflauf des Workflows **Verify API-Schulung Labs & Publish Docs**.
 
 - **Zeitstempel:** `{now_str}`
 - **Commit / Referenz:** `{git_sha}`
 - **GitHub Actions Run:** [{run_id}]({run_link})
-- **GitHub Pages:** [https://chatelao.github.io/api-schulung/](https://chatelao.github.io/api-schulung/)
-- **Read the Docs:** [https://api-schulung.readthedocs.io/](https://api-schulung.readthedocs.io/)
+- **Read the Docs (Lehrgang):** [https://api-schulung.readthedocs.io/](https://api-schulung.readthedocs.io/)
+- **GitHub Pages (Interaktives Lernstudio):** [https://chatelao.github.io/api-schulung/](https://chatelao.github.io/api-schulung/)
 
 ## Testergebnisse
 
@@ -178,6 +205,24 @@ Diese Seite dokumentiert den automatisierten Prüflauf des Workflows **Verify AP
 """
     dest.write_text(md, encoding="utf-8")
 
+    # Also update interactive/js/data-ci-results.js if interactive/ exists
+    if INTERACTIVE_CI_JS.parent.exists():
+        payload = {
+            "timestamp": now_str,
+            "gitSha": git_sha,
+            "runId": run_id,
+            "runUrl": run_link,
+            "totalTests": total_tests,
+            "totalFailures": total_failures,
+            "suites": suites_data,
+        }
+        INTERACTIVE_CI_JS.write_text(
+            "// Auto-generated by scripts/build-docs.py\nwindow.API_CI_RESULTS = "
+            + json.dumps(payload, indent=2, ensure_ascii=False)
+            + ";\n",
+            encoding="utf-8",
+        )
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -189,6 +234,9 @@ def main() -> None:
     for src_rel, dest_rel in ROOT_DOC_MAP.items():
         copy_doc(src_rel, dest_rel)
 
+    for src_rel, dest_rel in ADVANCED_MAP.items():
+        copy_doc(src_rel, dest_rel)
+
     copy_doc("00-setup/README.md", "setup/m00-setup.md")
     copy_doc("04-projekte/capstone-hybrid-order/README.md", "capstone/index.md")
     copy_doc("04-projekte/capstone-hybrid-order/RUBRIC.md", "capstone/rubric.md")
@@ -198,7 +246,7 @@ def main() -> None:
         copy_doc(f"02-uebungen/{mod}-uebung.md", f"uebungen/{mod}.md")
         copy_doc(f"03-loesungen/{mod}-loesung.md", f"loesungen/{mod}.md")
 
-    generate_ci_results(args.reports_dir, args.git_sha, args.run_id)
+    generate_ci_outputs(args.reports_dir, args.git_sha, args.run_id)
     print(f"Docs synchronized into {DOCS}")
 
 

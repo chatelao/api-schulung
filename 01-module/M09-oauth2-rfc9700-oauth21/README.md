@@ -3,7 +3,7 @@ module_id: M09
 title: "OAuth 2.0 vs. RFC 9700 & OAuth 2.1: Architektur & Anti-Patterns"
 level: "Stufe 3 - Experten"
 duration_minutes: 120
-tools: ["curl", "openssl", "jq", "Architektur-Analyse"]
+tools: ["Webbrowser (mock-oauth2 Debugger)", "Bruno Desktop", "Architektur-Analyse"]
 standards: ["RFC 6749 (OAuth 2.0)", "RFC 9700 (BCP 240)", "RFC 10017 (Browser-Based Apps)", "OAuth 2.1 (Draft-17)", "RFC 7636 (PKCE)"]
 lab_services: ["keycloak", "mock-oauth2"]
 prerequisites: ["M05", "M06", "M07"]
@@ -14,92 +14,73 @@ prerequisites: ["M05", "M06", "M07"]
 ## 1. Lernziele
 
 Nach Abschluss dieses Moduls kannst du:
-1. Die vier OAuth-Rollen (**Resource Owner**, **Client**, **Authorization Server**, **Resource Server**) in hybriden API-Architekturen eindeutig **abgrenzen**.
+1. Die vier OAuth-Rollen (**Resource Owner**, **Client**, **Authorization Server**, **Resource Server**) anhand eines Alltagsbeispiels eindeutig **abgrenzen**.
 2. Den Unterschied zwischen **RFC 6749 (2012)**, **RFC 9700 (BCP 240, Januar 2025)**, **RFC 10017 (2026)** und **OAuth 2.1 (`draft-ietf-oauth-v2-1-17`, Oktober 2026)** präzise **erklären**.
-3. Manuell einen kryptografischen **PKCE-`code_verifier` und eine `S256`-`code_challenge`** erzeugen und verstehen, wie PKCE Code-Interception verhindert.
-4. Veraltete Anti-Patterns (**Implicit Grant**, **ROPC**, `?access_token=` in URLs, **PKCE `plain`**) am Identity Provider nachweisbar **identifizieren** und ablehnen.
+3. Anschaulich nachvollziehen, wie **PKCE (`S256`)** gestohlene Login-Codes wertlos macht.
+4. Veraltete Anti-Patterns (**Implicit Grant**, **ROPC**, `?access_token=` in URLs, **PKCE `plain`**) im Browser und in API-Designs zuverlässig **erkennen**.
 
-## 2. Architektur und Kernkonzepte
+## 2. Architektur und Kernkonzepte (anschaulich erklärt)
 
-Der ursprüngliche OAuth-2.0-Standard **RFC 6749** aus dem Jahr 2012 liess Flows zu, die sich in der Praxis als unsicher erwiesen haben. Seit Januar 2025 ist **RFC 9700 (BCP 240 — OAuth 2.0 Security Best Current Practice)** verbindlich. Darauf aufbauend konsolidiert **OAuth 2.1 (`draft-ietf-oauth-v2-1-17`, Oktober 2026)** gemeinsam mit **RFC 10017 (OAuth 2.0 for Browser-Based Applications)** alle modernen Sicherheitsvorgaben in einem einzigen Kerndokument.
+Stell dir **OAuth 2.1** wie den **Valet-Autoschlüssel (Parkservice-Schlüssel)** im Hotel vor: Du gibst dem Parkservice nicht dein ganzes Schlüsselbund (dein Passwort!), sondern einen zeitlich und funktional begrenzten Zweitschlüssel (**Access Token**), der nur das Auto einparken darf, aber nicht den Kofferraum öffnet.
+
+### Die vier Rollen
+1. **Resource Owner:** Du selbst (der Benutzer, z. B. `alice`, der seine Daten freigibt).
+2. **Client:** Die App, die auf die Daten zugreifen möchte (z. B. Bruno Desktop oder eine Web-App).
+3. **Authorization Server:** Der zentrale Sicherheitsdienst (Keycloak `:8081` oder `mock-oauth2` `:8090`), der dich anmeldet und Tokens ausstellt.
+4. **Resource Server:** Die eigentliche Fach-API (z. B. der Bestellservice), die prüft, ob dein Token gültig ist.
 
 ### Vergleichstabelle: OAuth 2.0 (RFC 6749) vs. RFC 9700 / OAuth 2.1 (Stand Nov. 2026)
 
 | Aspekt | OAuth 2.0 (RFC 6749, 2012) | RFC 9700 (2025) & OAuth 2.1 (Draft-17, 2026) |
 | :--- | :--- | :--- |
-| **PKCE (RFC 7636)** | Optional (nachträglich für Mobile-Clients eingeführt) | **Pflicht für alle** Authorization-Code-Clients mit **`S256`** (`plain` verboten!) |
-| **Implicit Grant (`response_type=token`)** | Erlaubt für SPAs | **Entfernt / Verboten** (Token-Leak in Browser-Historie & Fragmenten) |
-| **Password Grant (ROPC, `grant_type=password`)** | Erlaubt | **Entfernt / Verboten** (Client sieht Benutzerpasswort im Klartext) |
-| **Bearer Token in URL-Query (`?access_token=`)** | In RFC 6750 technisch erwähnt | **Verboten** (Leaks über Server-/Proxy-Logs & `Referer`-Header) |
-| **Redirect-URI-Vergleich** | Teilweise Wildcards / Präfixe | **Exakter String-Vergleich** (Ausnahme: Loopback-Ports) |
-| **Refresh Tokens (Public Clients)** | Langlebig möglich | **Sender-Constrained** oder **Refresh Token Rotation** mit Reuse-Detection |
+| **PKCE (RFC 7636)** | Optional | **Pflicht für alle** Authorization-Code-Clients mit **`S256`** (`plain` verboten!) |
+| **Implicit Grant (`response_type=token`)** | Erlaubt für SPAs | **Entfernt / Verboten** (Token steht direkt in Browser-URL/Historie) |
+| **Password Grant (ROPC, `grant_type=password`)** | Erlaubt | **Entfernt / Verboten** (App sieht Benutzerpasswort im Klartext) |
+| **Bearer Token in URL-Query (`?access_token=`)** | Technisch erwähnt | **Verboten** (Leaks über Server-Logs & `Referer`) |
+| **Redirect-URI-Vergleich** | Teilweise Wildcards | **Exakter String-Vergleich** |
 
-### Die drei aktiven Standard-Flows im Jahr 2026
+### Wie funktioniert PKCE (`S256`) ohne Mathematik-Ballast?
+1. Vor dem Login würfelt deine App ein geheimes Zufallswort (**`code_verifier`**) und behält es für sich.
+2. Sie schickt nur dessen Einweg-Fingerabdruck (**`code_challenge`**, Methode `S256`) beim Login an Keycloak mit.
+3. Nach erfolgreicher Anmeldung schickt Keycloak einen Einmal-Code zurück. Beim Einlösen dieses Codes an `/token` muss die App das ursprüngliche Geheimwort (`code_verifier`) vorzeigen. Ein Angreifer, der den Code abfängt, kennt das Geheimwort nicht und scheitert!
 
-1. **Authorization Code + PKCE (`S256`):** Für alle Anwendungen im Benutzerkontext (Web-Apps/BFF, SPAs nach RFC 10017, Mobile, Desktop wie Bruno).
-2. **Client Credentials (`grant_type=client_credentials`):** Für reine Machine-to-Machine-Kommunikation (M2M) ohne Benutzerkontext.
-3. **Device Authorization Grant (RFC 8628, Ausblick):** Für eingabebeschränkte Geräte (Smart-TVs, CLIs ohne lokalen Browser).
+## 3. Geführter Walkthrough (`Browser` & `Bruno Desktop`)
 
-## 3. Geführter Walkthrough (`curl` & `openssl`)
+### Schritt 1: Interaktiven OAuth-Debugger im Browser ausprobieren
 
-### Schritt 1: PKCE `code_verifier` und `S256` `code_challenge` manuell berechnen
+1. Öffne im Browser **`http://localhost:8090/default/debugger`** (`mock-oauth2-server`).
+2. Du siehst dort Schritt für Schritt die Parameter des **Authorization Code Flows** (`client_id`, `redirect_uri`, `scope`, `code_challenge`, `code_challenge_method=S256`).
+3. Starte einen Test-Login, beobachte die Weiterleitung mit `?code=...` und tausche den Code per Klick in ein JWT-Access-Token um.
 
-```bash
-# 1. Zufalls-Verifier (Base64URL ohne Padding, 43+ Zeichen)
-CODE_VERIFIER="$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')"
+### Schritt 2: Härtung des Keycloak-Clients `bruno-pkce-client` im Browser testen
 
-# 2. SHA-256 Hash als Base64URL (= S256 code_challenge)
-CODE_CHALLENGE="$(printf '%s' "${CODE_VERIFIER}" | openssl dgst -sha256 -binary | openssl base64 -A | tr '+/' '-_' | tr -d '=')"
+Öffne diese vier Test-Links direkt in einem neuen Browser-Tab (oder in Bruno Desktop mit deaktiviertem Redirect-Following):
+1. **Implicit Grant (`response_type=token`):** `http://localhost:8081/realms/api-lab/protocol/openid-connect/auth?client_id=bruno-pkce-client&response_type=token&redirect_uri=http://localhost:8080/callback&scope=openid` → Keycloak bricht ab (`#error=unauthorized_client`, da Implicit deaktiviert ist).
+2. **Fehlendes PKCE:** `http://localhost:8081/realms/api-lab/protocol/openid-connect/auth?client_id=bruno-pkce-client&response_type=code&redirect_uri=http://localhost:8080/callback&scope=openid` → Keycloak bricht ab (`?error=invalid_request`, `Missing parameter: code_challenge_method`).
+3. **Unsicheres PKCE `plain`:** Mit `&code_challenge=abc...&code_challenge_method=plain` → Keycloak bricht ab (`Invalid parameter: code challenge method is not matching the configured one`).
 
-echo "code_verifier  = ${CODE_VERIFIER}"
-echo "code_challenge = ${CODE_CHALLENGE}"
-```
-
-### Schritt 2: Härtung des Keycloak-Clients `bruno-pkce-client` verifizieren
-
-> **RFC 6749 §4.1.2.1-Verhalten:** Bei ungültiger `redirect_uri` bricht der Authorization Server sofort mit **HTTP `400`** ab. Ist die `redirect_uri` gültig, leitet er Fehler (`unauthorized_client`, `invalid_request`) per **HTTP `302 Found`** mit `?error=...` bzw. `#error=...` im `Location`-Header zurück.
-
-```bash
-# Test A: Implicit Grant (response_type=token) -> 302 mit error=unauthorized_client
-curl -sS -D - -o /dev/null \
-  "http://localhost:8081/realms/api-lab/protocol/openid-connect/auth?client_id=bruno-pkce-client&response_type=token&redirect_uri=http://localhost:8080/callback&scope=openid" \
-  | grep -iE "^(HTTP/|Location:)"
-
-# Test B: Authorization Code OHNE code_challenge -> 302 mit error=invalid_request
-curl -sS -D - -o /dev/null \
-  "http://localhost:8081/realms/api-lab/protocol/openid-connect/auth?client_id=bruno-pkce-client&response_type=code&redirect_uri=http://localhost:8080/callback&scope=openid" \
-  | grep -iE "^(HTTP/|Location:)"
-
-# Test C: PKCE mit Methode 'plain' -> 302 mit error=invalid_request
-curl -sS -D - -o /dev/null \
-  "http://localhost:8081/realms/api-lab/protocol/openid-connect/auth?client_id=bruno-pkce-client&response_type=code&redirect_uri=http://localhost:8080/callback&scope=openid&code_challenge=${CODE_VERIFIER}&code_challenge_method=plain" \
-  | grep -iE "^(HTTP/|Location:)"
-
-# Test D: PKCE mit S256 wird akzeptiert (HTTP 200 Login-Seite)
-curl -sS -o /dev/null -w "PKCE S256 -> HTTP %{http_code}\n" \
-  "http://localhost:8081/realms/api-lab/protocol/openid-connect/auth?client_id=bruno-pkce-client&response_type=code&redirect_uri=http://localhost:8080/callback&scope=openid&code_challenge=${CODE_CHALLENGE}&code_challenge_method=S256"
-```
+> **Für Fortgeschrittene (Shell & `curl`):** Wie man `code_verifier` und `code_challenge` mit `openssl` berechnet und alle Prüfungen per Skript testet, zeigt [Advanced A05: OAuth 2.1 & OIDC per curl](../../advanced/A05-oauth21-pkce-oidc-curl.md).
 
 ## 4. Typische Fallstricke und Troubleshooting
 
 | Fehlerbild | Ursache | Diagnose & Lösung |
 | :--- | :--- | :--- |
-| `invalid_grant: PKCE verification failed` am Token-Endpunkt | `code_verifier` wurde mit Zeilenumbruch (`echo` statt `printf '%s'`) gehasht | Bei Hash-Berechnung immer `printf '%s'` verwenden, niemals `echo` (fügt `\n` an!) |
-| Discovery zeigt `["plain", "S256"]`, aber Server lehnt `plain` ab | Serverweite Client-Konfiguration (`pkce.code.challenge.method: S256`) erzwingt `S256` unabhängig von globaler Discovery-Liste | Clients immer fest auf `S256` konfigurieren |
-| `invalid_parameter: redirect_uri` | Abweichender Trailing Slash, Port oder Schema zwischen `/auth` und `/token` | Exakten String aus der Client-Konfiguration verwenden |
+| `invalid_request: Missing parameter: code_challenge_method` | Client sendet keinen PKCE-Schutz, Keycloak verlangt aber `S256` | In Bruno unter Auth → OAuth 2.0 das Häkchen bei **PKCE** aktivieren |
+| `invalid_parameter: redirect_uri` | Tippfehler oder fehlender Slash in der Callback-URL | Exakte URL aus der Client-Registrierung (`https://oauth.usebruno.com/callback`) nutzen |
+| Browser zeigt alte Sitzung an | Noch in Keycloak angemeldet | Privates Browserfenster nutzen oder unter `/account` abmelden |
 
 ## 5. Spickzettel (Cheat Sheet)
 
-| Begriff / Parameter | Bedeutung |
+| Begriff / Standard | Bedeutung |
 | :--- | :--- |
-| `code_verifier` | Kryptografisch zufälliger Geheimwert (43–128 Zeichen, nur im Client gespeichert) |
-| `code_challenge` | `BASE64URL(SHA256(ASCII(code_verifier)))` beim `/auth`-Aufruf |
-| `code_challenge_method=S256` | Einzig zulässige PKCE-Methode nach RFC 9700 / OAuth 2.1 |
-| RFC 9700 (BCP 240) | Verbindliche OAuth-2.0-Sicherheits-Best-Practices (Jan. 2025) |
-| RFC 10017 | OAuth 2.0 for Browser-Based Applications (2026) |
+| **RFC 9700 (BCP 240)** | Verbindliche OAuth-2.0-Sicherheitsregeln (Jan. 2025) |
+| **OAuth 2.1 (Draft-17)** | Moderner Standard ohne Implicit & ROPC, mit Pflicht-PKCE `S256` |
+| **RFC 10017** | OAuth 2.0 für Browser-Anwendungen (2026) |
+| **Authorization Code + PKCE** | Standard-Flow für Benutzer-Logins |
+| **Client Credentials** | Standard-Flow für Server-zu-Server (M2M) ohne Benutzer |
 
 ## 6. Querverweise
 
 - **Übung:** [M09-uebung.md](../../02-uebungen/M09-uebung.md)
 - **Musterlösung:** [M09-loesung.md](../../03-loesungen/M09-loesung.md)
-- **curl-Skript:** [m09-pkce-manual.sh](../../scripts/curl/m09-pkce-manual.sh)
+- **Advanced (Shell/`curl`):** [A05-oauth21-pkce-oidc-curl.md](../../advanced/A05-oauth21-pkce-oidc-curl.md)

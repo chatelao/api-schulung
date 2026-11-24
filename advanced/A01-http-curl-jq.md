@@ -1,0 +1,42 @@
+# A01: HTTP-Fundament & `curl` ohne Magie (`jq` & Diagnose)
+
+In diesem Advanced-Modul verlässt du die grafische Oberfläche und machst sämtliche HTTP-Header, Weiterleitungen und Statuscodes direkt im Terminal sichtbar.
+
+## 1. Lernziele
+
+1. Request-Line, Header, Body und Weiterleitungen (`-v`, `-i`, `-L`) ohne GUI-Abstraktion **analysieren**.
+2. JSON-Payloads sauber mit `curl --json` senden und Fehlercodes über `--fail-with-body` in Bash-Skripten abfangen.
+3. Antworten mit `jq` parsen und IDs dynamisch für nachfolgende Requests weiterverwenden.
+
+## 2. Praxis-Walkthrough gegen das Docker-Labor
+
+```bash
+# 1. Header-Handshake inspizieren
+curl -v http://localhost:8180/headers
+
+# 2. Redirects verfolgen (ohne -L -> 302, mit -L -> 200)
+curl -i http://localhost:8180/redirect/2
+curl -iL http://localhost:8180/redirect/2
+
+# 3. 415 Unsupported Media Type und 405 Method Not Allowed provozieren
+curl -i -X POST http://localhost:8080/api/v3/pet -H "Content-Type: text/plain" -d '{"id": 1001}'
+curl -i -X DELETE http://localhost:8080/api/v3/pet
+
+# 4. Vollstaendiger CRUD-Lauf mit --json und jq
+./scripts/curl/m01-petstore-crud.sh
+```
+
+## 3. Wichtige `curl`-Flags für HTTP
+
+| Flag | Wirkung |
+| :--- | :--- |
+| `-v` | Zeigt TCP/TLS-Handshake, gesendete Request-Header (`>`) und Antwort-Header (`<`) |
+| `-sS --fail-with-body` | Unterdrückt Fortschrittsbalken, schlägt bei HTTP ≥ 400 mit Exit-Code != 0 fehl, zeigt aber Fehler-Body |
+| `-L` | Folgt `Location`-Weiterleitungen (`3xx`) |
+| `--json '{...}'` | Setzt `Content-Type: application/json`, `Accept: application/json` und sendet JSON per POST |
+| `-w '{"total":%{time_total}}\n'` | Misst DNS-, Connect- und TTFB-Zeiten maschinenlesbar |
+
+## 4. Querverweise
+
+- Referenzskript: [scripts/curl/m01-petstore-crud.sh](../scripts/curl/m01-petstore-crud.sh)
+- Übung: [Advanced-Übungen Aufgabe 1](uebungen.md#aufgabe-a1-http-crud-timing-mit-curl-jq)

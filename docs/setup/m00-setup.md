@@ -1,60 +1,54 @@
-# Modul 0: Labor-Setup, Werkzeug-Check & Smoke-Tests (`M00`)
+# Modul 0: Labor-Setup, Terminal-Crashkurs & Smoke-Tests (`M00`)
 
 - **Dauer:** 45 Minuten
-- **Stufe:** Einstieg
-- **Werkzeuge:** Docker, Docker Compose, `curl`, `jq`, Bruno Desktop / `@usebruno/cli` (`bru`), SoapUI Open Source 5.10.1, `openssl`, `keytool`
+- **Stufe:** Einstieg (ohne Shell-Vorkenntnisse)
+- **Werkzeuge:** Docker Desktop (oder Docker Engine), **Bruno Desktop**, **SoapUI Open Source 5.10.1**, Webbrowser
 
 ## 1. Lernziele
 
 Nach Abschluss dieses Setup-Moduls kannst du:
-1. Den vollständigen lokalen Docker-Labor-Stack deterministisch starten und stoppen.
-2. Lokale Zertifikate (Root-CA, Server-SAN, Client-PEM/PFX und Java-Keystores) reproduzierbar erzeugen.
-3. Die Erreichbarkeit aller sechs Labor-Services mittels `00-setup/smoke-test.sh` automatisiert verifizieren.
-4. Typische Installations- und Netzwerkprobleme (Ports, `/etc/hosts`, Docker-Hostnamen, Secret-Hygiene) eigenständig diagnostizieren.
+1. Mit drei einfachen Copy-Paste-Befehlen im Terminal das lokale Übungslabor starten (auch ohne frühere Shell-Erfahrung).
+2. Die sechs lokalen API-Dienste im Webbrowser aufrufen und dich vergewissern, dass alles läuft.
+3. **Bruno Desktop** und **SoapUI Open Source 5.10.1** öffnen und für den Kurs vorbereiten.
 
-## 2. Lokale Labor-Services & Ports
+## 2. Kurzer Terminal-Crashkurs (falls du selten eine Shell nutzt)
 
-| Service | Host-URL | Zweck im Kurs |
-| :--- | :--- | :--- |
-| `petstore3` | `http://localhost:8080` | REST / OpenAPI 3.0 Sandbox (`/api/v3/openapi.json`) |
-| `keycloak` | `http://localhost:8081` | Primärer IdP (Keycloak 26.8.2, Realm `api-lab`) |
-| `mock-oauth2` | `http://localhost:8090` | Leichtgewichtiger OAuth2/OIDC-IdP (CI / Low-RAM) |
-| `go-httpbin` | `http://localhost:8180` | HTTP-Echo, Basic/Digest/Bearer-Tests |
-| `tls-proxy` (TLS) | `https://localhost:8444` | Server-TLS mit lokaler Custom CA (`nginx` vor `go-httpbin`) |
-| `tls-proxy` (mTLS) | `https://localhost:8443` | Striktes Mutual TLS (Client-Zertifikat zwingend) |
-| `soap-service` | `http://localhost:9000` | WSDL 1.1 (`/soap?wsdl`), SOAP 1.1/1.2 (`/soap`), WS-Security (`/soap/secure`) |
+Ein **Terminal** (unter Windows *PowerShell* oder *Git Bash*, unter macOS *Terminal*) ist nur ein Textfenster, in das man Befehle einfügt und mit **Enter** bestätigt.
+- Für den Basis-Lehrgang brauchst du das Terminal **nur hier in Modul 0 einmal zum Starten** der Übungsumgebung. Danach arbeiten wir mit grafischen Programmen (**Bruno Desktop**, **SoapUI**, **Browser**).
+- Falls du später tiefer in die Kommandozeile einsteigen möchtest, wartet der optionale [Advanced-Track (`curl` & Shell)](../advanced/index.md) auf dich.
 
-## 3. Schritt-für-Schritt-Einrichtung
+## 3. Schritt-für-Schritt-Einrichtung (Copy & Paste)
+
+Öffne ein Terminal im Ordner `api-schulung` und führe diese vier Zeilen nacheinander aus:
 
 ```bash
-# 1. Lokale .env-Datei aus Vorlage erstellen (wird von .gitignore ausgeschlossen)
+# 1. Konfigurationsvorlage kopieren
 cp lab/.env.example lab/.env
 
-# 2. Zertifikate & Java-Keystores erzeugen
+# 2. Lokale Test-Zertifikate erzeugen (fuer Modul 7 & 8)
 ./lab/certs/generate-certs.sh
 
-# 3. Labor-Container im Hintergrund starten
+# 3. Alle Labor-Server im Hintergrund starten
 docker compose -f lab/docker-compose.yml --env-file lab/.env up -d
 
-# 4. Smoke-Test ausfuehren (wartet bei Bedarf kurz auf Keycloak)
+# 4. Pruefen, ob alle Dienste antworten (ca. 20-30s nach Start)
 ./00-setup/smoke-test.sh
 ```
 
-### Linux-Besonderheit für Browser-OAuth-Flows (`host.docker.internal`)
+### Prüfen im Browser (ohne Terminal)
+Alternativ kannst du nach 30 Sekunden einfach diese Links im Browser öffnen:
+- **Petstore Swagger UI:** `http://localhost:8080`
+- **Echo-Testserver:** `http://localhost:8180`
+- **SOAP-Vertrag (WSDL):** `http://localhost:9000/soap?wsdl`
+- **Keycloak OIDC-Visitenkarte:** `http://localhost:8081/realms/api-lab/.well-known/openid-configuration`
 
-Damit Webbrowser auf dem Host und Container im Docker-Netzwerk denselben OIDC-`issuer`-Hostnamen auflösen, füge unter Linux einmalig folgenden Eintrag in `/etc/hosts` hinzu:
-
-```text
-127.0.0.1 host.docker.internal
-```
-
-*(Unter macOS und Windows mit Docker Desktop ist `host.docker.internal` bereits vorkonfiguriert.)*
+### Linux-Hinweis für Browser-Logins in Modul 10 (`host.docker.internal`)
+Falls du Linux nutzt und später in Browser-Logins `host.docker.internal` verwendet wird, füge einmalig `127.0.0.1 host.docker.internal` in `/etc/hosts` ein (unter macOS und Windows mit Docker Desktop automatisch vorhanden).
 
 ## 4. Troubleshooting
 
 | Symptom | Ursache | Lösung |
 | :--- | :--- | :--- |
-| Port bereits belegt (`address already in use`) | Lokaler Dienst nutzt `8080`, `8081`, `8443`, `8444` oder `9000` | Belegenden Prozess stoppen (`ss -tulpn` / `lsof -i :8080`) |
-| `smoke-test.sh` meldet Fehler auf `8443`/`8444` | `./lab/certs/generate-certs.sh` wurde vor `docker compose up` nicht ausgeführt | Zertifikate erzeugen und `docker compose -f lab/docker-compose.yml restart tls-proxy` ausführen |
-| `bru: command not found` | `@usebruno/cli` nicht global installiert | `npm install -g @usebruno/cli` (Node.js >= 20) |
-| Keycloak braucht > 20s beim ersten Start | Initialer Realm-Import (`api-lab`) | `docker logs -f api-lab-keycloak` prüfen und `smoke-test.sh` erneut starten |
+| `docker` Befehl nicht gefunden | Docker Desktop ist nicht installiert oder nicht gestartet | Docker Desktop starten und Terminal neu öffnen |
+| Port bereits belegt | Ein anderes Programm nutzt bereits `8080`, `8081` oder `9000` | Anderes Programm schliessen oder Docker neu starten |
+| Keycloak braucht > 30s beim ersten Start | Initialer Aufbau der Testdatenbank (`api-lab`) | Kurz 30 Sekunden warten und `./00-setup/smoke-test.sh` erneut ausführen |

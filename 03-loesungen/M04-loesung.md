@@ -1,17 +1,11 @@
-# Musterlösung M04: Assertions, Request-Chaining, Scripting & Mocking
+# Musterlösung M04: Assertions, Request-Chaining & Mocking
 
-## Lösung Aufgabe A: Bruno-Lauf mit JUnit-Report
-
-```bash
-cd collections/bruno/petstore-lab
-bru run -r --env local --reporter-junit /tmp/m04-junit.xml
-```
-
-Da `01-create-pet.yml` `bru.setVar("petId", ...)` nutzt, bleibt `environments/local.yml` unangetastet (`git status` sauber).
+## Lösung Aufgabe A: Bruno Desktop Collection Runner
+- Im **Assert-Tab** von `03-get-pet-by-id` wird `res.body.status` `eq` `available` ergänzt.
+- Da `01-create-pet` die ID mit `bru.setVar("petId", ...)` flüchtig im Arbeitsspeicher ablegt, bleiben die gespeicherten Environment-Dateien (`environments/local.yml`) sauber unverändert.
 
 ## Lösung Aufgabe B: SoapUI `Property Transfer` & `XPath Match`
-
-In [collections/soapui/order-service-soapui-project.xml](../collections/soapui/order-service-soapui-project.xml) ist der TestCase `OrderChainingTestCase` bereits vollständig konfiguriert:
+In [collections/soapui/order-service-soapui-project.xml](../collections/soapui/order-service-soapui-project.xml) ist der TestCase `OrderChainingTestCase` vollständig konfiguriert:
 - **Source XPath (`CreateOrder`):**
   ```xpath
   declare namespace tns='http://api-schulung.local/orders/v1';
@@ -22,22 +16,12 @@ In [collections/soapui/order-service-soapui-project.xml](../collections/soapui/o
   declare namespace tns='http://api-schulung.local/orders/v1';
   //tns:GetOrderRequest/tns:orderId
   ```
-- **Zusätzliche XPath Match Assertion auf `GetOrder`:**
-  - Expression: `declare namespace tns='http://api-schulung.local/orders/v1'; //tns:GetOrderResponse/tns:customerId`
-  - Expected Result: `CUST-CHAIN-01`
 
-## Lösung Aufgabe C: SoapUI MockService per `curl` ansprechen
+## Lösung Aufgabe C: SoapUI MockService
+- Nach Start von `OrderServiceMock` antwortet `http://localhost:8088/mockOrderService` auf `CalculateTax` unabhängig vom Docker-Container mit `taxRate=0.081`, `taxAmount=16.20`, `grossAmount=216.20`.
 
-Nach Starten des `OrderServiceMock` in SoapUI (Port `8088`, Pfad `/mockOrderService`):
+## Lösung Bonus-Challenge D: Data-Driven Testing (Bruno vs. SoapUI OS)
+- **Bruno Desktop:** Im Collection Runner *Select Data File → CSV* wählen; Felder stehen direkt als `{{petId}}` / `{{petName}}` bereit.
+- **SoapUI Open Source 5.10.1:** Unterstützt **keinen** codelosen Excel-/CSV-`DataSource`-TestStep (dieses Feature gehört zu **ReadyAPI**).
 
-```bash
-curl -sS -X POST "http://localhost:8088/mockOrderService" \
-  -H "Content-Type: text/xml; charset=utf-8" \
-  -H 'SOAPAction: "http://api-schulung.local/orders/v1/CalculateTax"' \
-  --data-binary @01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/create-order-soap12.xml
-```
-
-## Lösung Bonus-Challenge D: Data-Driven Testing (Bruno CLI vs. SoapUI OS)
-
-- **Bruno CLI:** `bru run -r --env local --csv-file-path /tmp/pets.csv` (liest `{{petId}}` / `{{petName}}` pro Zeile).
-- **SoapUI Open Source 5.10.1:** Unterstützt **keinen** codelosen Excel-/CSV-`DataSource`-TestStep (dieses Feature gehört zu **ReadyAPI**). In SoapUI OS lässt sich ein Loop lediglich über einen `Groovy Script`-TestStep (`new File(...).eachLine { ... }`, `testRunner.runTestStepByName(...)`) nachbilden.
+*(Für automatisierte `bru run`-CI-Läufe siehe [Advanced A06](../advanced/A06-token-lifecycle-bruno-cli-cicd.md).)*

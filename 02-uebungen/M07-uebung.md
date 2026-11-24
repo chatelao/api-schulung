@@ -3,66 +3,57 @@ module_id: M07
 title: "TLS, Custom Certificate Authorities & Mutual TLS (mTLS)"
 level: "Stufe 2 - Sicherheit"
 duration_minutes: 105
-tools: ["curl", "Bruno (GUI & CLI)", "SoapUI Open Source 5.10.1", "openssl"]
+tools: ["Bruno Desktop (GUI)", "SoapUI Open Source 5.10.1", "Webbrowser"]
 standards: ["X.509", "TLS 1.2/1.3", "PEM / PKCS#12 / JKS"]
 lab_services: ["tls-proxy", "go-httpbin"]
 prerequisites: ["M00", "M05", "M06"]
 ---
 
-# Übung M07: TLS, Custom CA & Mutual TLS (mTLS)
+# Übung M07: TLS, Custom CA & Mutual TLS (mTLS) in Bruno & SoapUI
 
 ## 1. Szenario und Zielzustand
 
-Ein internes Zahlungsgateway verwendet eine unternehmenseigene Zertifizierungsstelle (Custom CA) und erzwingt auf dem sensiblen Endpunkt (`https://localhost:8443`) gegenseitige Authentifizierung (**mTLS**). Du sollst alle Verbindungen sauber ohne `-k` / `--insecure` einrichten, die erfolgreiche Client-Identifikation (`X-Client-Cert-Verify: SUCCESS`) belegen und den Negativfall ohne Client-Zertifikat nachweisen.
+Ein internes Zahlungsgateway verwendet eine unternehmenseigene Zertifizierungsstelle (**Custom CA**) und verlangt auf dem sensiblen Endpunkt (`https://localhost:8443`) gegenseitige Authentifizierung (**mTLS**). Du richtest in **Bruno Desktop** (und optional **SoapUI OS 5.10.1**) sowohl das Server-Vertrauen (`ca.crt`) als auch das Client-Zertifikat ein — ohne die Zertifikatsprüfung abzuschalten.
 
 ## 2. Aufgabenpakete
 
-### Aufgabe A: Zertifikate inspizieren & Custom CA mit `curl`
-1. Inspiziere `lab/certs/out/server.crt` und `lab/certs/out/client.crt` mit `openssl x509 -noout -subject -issuer -ext subjectAltName`.
-2. Belege per `curl https://localhost:8444/headers`, dass ohne `--cacert` ein TLS-Vertrauensfehler auftritt.
-3. Rufe `https://localhost:8444/headers` sauber mit `--cacert lab/certs/out/ca.crt` auf.
+### Aufgabe A: Custom CA Vertrauen in Bruno Desktop (`8444`)
+1. Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) in Bruno Desktop (`local`-Environment aktivieren).
+2. Sende im Ordner `TLS & mTLS` den Request `01-custom-ca-tls` (`https://localhost:8444/headers`) und beobachte den Zertifikatsfehler ohne Custom CA.
+3. Hinterlege `lab/certs/out/ca.crt` unter *Preferences → General → Custom CA Certificate* (Prüfung bleibt aktiv!) und sende den Request erneut → erwartet `200 OK` mit `"X-Tls-Mode": ["server-tls-custom-ca"]`.
 
-### Aufgabe B: Mutual TLS (`8443`) + Negativtest in `curl`
-1. Sende einen Request an `https://localhost:8443/headers` **nur** mit `--cacert` (ohne Client-Zertifikat) und dokumentiere die Ablehnung.
-2. Sende denselben Request mit `--cert lab/certs/out/client.crt --key lab/certs/out/client.key` und prüfe per `jq` die vom `tls-proxy` gesetzten Header `X-Client-Cert-Verify` und `X-Client-Cert-Dn`.
+### Aufgabe B: Mutual TLS (`8443`) + Negativtest in Bruno Desktop
+1. Sende `02-mtls-verified` (`https://localhost:8443/headers`) noch **ohne** Client-Zertifikat und dokumentiere die Ablehnung (`400 Bad Request`).
+2. Hinterlege unter *Collection Settings → Client Certificates* für Domain `localhost` das Paar `lab/certs/out/client.crt` und `lab/certs/out/client.key`.
+3. Sende `02-mtls-verified` erneut und prüfe in der Antwort, dass `X-Client-Cert-Verify` den Wert `SUCCESS` und `X-Client-Cert-Dn` deinen Client-Namen `CN=api-lab-client` zeigt.
 
-### Aufgabe C: Bruno CLI mTLS-Lauf (`--client-cert-config`)
-1. Erzeuge `collections/bruno/auth-hygiene-lab/client-cert-config.json` aus der `.example.json`-Vorlage (und prüfe per `git status`, dass die Datei ignoriert wird).
-2. Führe den Ordner `tls-mtls` in [auth-hygiene-lab](../collections/bruno/auth-hygiene-lab/opencollection.yml) mittels `bru run` unter Angabe von `--cacert` und `--client-cert-config` aus.
+### Aufgabe C: `client.pfx` & `client-keystore.jks` (SoapUI OS 5.10.1)
+1. Teste in Bruno alternativ den Zertifikatstyp **PFX** mit `lab/certs/out/client.pfx` (Passwort `CHANGE_ME_LAB_ONLY`).
+2. Öffne in **SoapUI OS 5.10.1** *File → Preferences → SSL Settings* und trage `lab/certs/out/client-keystore.jks` ein, um zu sehen, wie Java-Clients Zertifikate verwalten.
 
-### Bonus-Challenge D: PKCS#12 (`.pfx`) & SoapUI Keystore testen
-Teste den mTLS-Endpunkt `https://localhost:8443/headers` einmal mit der `.pfx`-Datei (`--cert-type P12 --cert lab/certs/out/client.pfx:CHANGE_ME_LAB_ONLY` via `-K -`) oder binde `client-keystore.jks` in SoapUI OS 5.10.1 ein.
+### Bonus-Challenge D: CI-Vorlage `client-cert-config.example.json` verstehen
+Öffne [client-cert-config.example.json](../collections/bruno/auth-hygiene-lab/client-cert-config.example.json) in einem Texteditor und erkläre, warum neben der GUI-Einstellung auch eine solche JSON-Datei für automatisierte Pipeline-Läufe benötigt wird.
+
+> **Hinweis:** Die Shell-Übungen mit `openssl` und `curl` findest du in [Advanced A04](../advanced/A04-tls-mtls-openssl-curl.md).
 
 ## 3. Gestufte Hilfestellungen
 
 <details>
-<summary>Tipp 1 (Konzeptionell): Warum scheitert bru run trotz funktionierender GUI-Konfiguration?</summary>
+<summary>Tipp 1 (Konzeptionell): Warum haben Collection-Zertifikate Vorrang vor globalen?</summary>
 
-Die Bruno Desktop App speichert globale Zertifikate und Custom CAs im Benutzerprofil. Die Bruno CLI (`bru run`) liest diese globalen GUI-Preferences bewusst nicht aus, damit CI-Pipelines deterministisch bleiben. Daher braucht die CLI explizit `--cacert` und `--client-cert-config`.
+Wenn ein Entwicklerteam an mehreren Projekten mit unterschiedlichen Kunden-Zertifikaten arbeitet, schützt die Collection-Einstellung davor, versehentlich das falsche Firmenzertifikat zu senden.
 
 </details>
 
 <details>
-<summary>Tipp 2 (Konkret): Konkrete Kommandos für Aufgabe A, B und C</summary>
+<summary>Tipp 2 (Konkret): Wo liegt das Passwort für client.pfx und client-keystore.jks?</summary>
 
-```bash
-# OpenSSL-Inspektion
-openssl x509 -in lab/certs/out/server.crt -noout -subject -issuer -ext subjectAltName
-
-# Bruno CLI mit Custom CA + mTLS
-cp collections/bruno/auth-hygiene-lab/client-cert-config.example.json \
-   collections/bruno/auth-hygiene-lab/client-cert-config.json
-cd collections/bruno/auth-hygiene-lab
-bru run tls-mtls --env local \
-  --cacert ../../../lab/certs/out/ca.crt \
-  --client-cert-config ./client-cert-config.json
-```
+Im Labor lautet das Standard-Passwort für beide Container-Dateien `CHANGE_ME_LAB_ONLY` (konfiguriert in `lab/.env.example`).
 
 </details>
 
 ## 4. Selbstkontrolle (Definition of Done)
 
-- [ ] `https://localhost:8444/headers` liefert mit `--cacert` HTTP `200 OK` (ohne `-k`).
-- [ ] `https://localhost:8443/headers` lehnt Aufrufe ohne Client-Zertifikat mit HTTP `400` / TLS-Fehler ab.
-- [ ] `https://localhost:8443/headers` liefert mit Client-Zertifikat `X-Client-Cert-Verify: SUCCESS` und `CN=api-lab-client`.
-- [ ] `bru run tls-mtls` besteht alle Assertions und `client-cert-config.json` bleibt von Git ignoriert.
+- [ ] `01-custom-ca-tls` (`8444`) liefert mit hinterlegter `ca.crt` HTTP `200 OK` (ohne Deaktivierung der SSL-Prüfung).
+- [ ] `02-mtls-verified` (`8443`) wird ohne Client-Zertifikat mit HTTP `400` abgelehnt.
+- [ ] `02-mtls-verified` (`8443`) liefert mit Client-Zertifikat `X-Client-Cert-Verify: SUCCESS`.

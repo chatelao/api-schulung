@@ -4,18 +4,25 @@ Diese Anleitung bringt deine lokale Laborumgebung in unter 15 Minuten zum Laufen
 
 ## 1. Voraussetzungen prüfen
 
-Stelle sicher, dass die folgenden Werkzeuge im Terminal verfügbar sind:
+Für den **Basis-Lehrgang (M00–M12)** genügen **Docker**, ein moderner **Browser**, **Bruno Desktop** und **SoapUI Open Source 5.10.1**. Du musst im Basis-Lehrgang keine eigenen `curl`- oder Shell-Kommandos schreiben — für den Start des Labors reichen vier kopierfertige Zeilen (siehe [00-setup/README.md](setup/m00-setup.md) mit Terminal-Crashkurs).
+
+Prüfe im Terminal die Docker-Installation:
 
 ```bash
 docker --version
 docker compose version
+```
+
+*Optional für den [Advanced-Track (Shell & curl)](advanced/index.md) und CI-Automatisierung:*
+
+```bash
 curl --version
 jq --version
 openssl version
-bru --version       # @usebruno/cli (optional fuer GUI-only, Pflicht fuer CI & M02/M04/M07/M12)
+bru --version       # @usebruno/cli (optional fuer GUI-only, verwendet in A06 & CI)
 ```
 
-> **Hinweis zu Bruno CLI:** Falls `bru` noch nicht installiert ist, installiere es via `npm install -g @usebruno/cli` (Node.js >= 20 empfohlen).
+> **Hinweis zu Bruno:** Installiere für den Basis-Kurs **Bruno Desktop** (v3/v4). Die CLI (`npm install -g @usebruno/cli`) wird erst im Advanced-Kapitel `A06` und in der CI benötigt.
 > **Hinweis zu SoapUI:** Lade **SoapUI Open Source 5.10.1** herunter und prüfe, ob sich die Anwendung starten lässt.
 
 ## 2. Repository vorbereiten & `.env` anlegen
@@ -57,4 +64,4 @@ Erwartete Ausgabe:
 
 ## 5. Nächster Schritt
 
-Lies [00-setup/README.md](setup/m00-setup.md) für Troubleshooting-Details und starte anschliessend mit [Modul 1: HTTP-Fundament & curl ohne Magie](module/M01.md).
+Lies [00-setup/README.md](setup/m00-setup.md) für Troubleshooting-Details und starte anschliessend mit [Modul 1: HTTP-Fundament & erste API-Requests](module/M01.md).

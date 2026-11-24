@@ -1,21 +1,17 @@
 # Musterlösung M09: OAuth 2.0 vs. RFC 9700 & OAuth 2.1
 
-## Lösung Aufgabe A & B: Automatisierte Prüfung
+## Lösung Aufgabe A: Browser-Debugger (`http://localhost:8090/default/debugger`)
+1. Der Browser ruft `/default/authorize` auf (`response_type=code`, `code_challenge`, `code_challenge_method=S256`).
+2. Nach Anmeldung wird ein einmaliger `code` an die Callback-URL geliefert.
+3. Dieser `code` wird gemeinsam mit dem `code_verifier` an `/default/token` gesendet und gegen ein signiertes JWT getauscht.
 
-Siehe ausführbares Referenzskript: [scripts/curl/m09-pkce-manual.sh](../scripts/curl/m09-pkce-manual.sh).
+## Lösung Aufgabe B: Erwartete Ablehnungen auf `bruno-pkce-client`
+- **Implicit (`response_type=token`):** HTTP `302 Found` → `#error=unauthorized_client` (*Implicit flow is disabled for the client*)
+- **Fehlendes PKCE:** HTTP `302 Found` → `?error=invalid_request` (*Missing parameter: code_challenge_method*)
+- **PKCE `plain`:** HTTP `302 Found` → `?error=invalid_request` (*Invalid parameter: code challenge method is not matching the configured one*)
 
-### Erwartete Statuscodes auf `bruno-pkce-client` (bei gültiger `redirect_uri`)
-- `response_type=token` (Implicit): **HTTP `302 Found`** mit `#error=unauthorized_client` (`Implicit flow is disabled for the client.`)
-- Fehlendes `code_challenge`: **HTTP `302 Found`** mit `?error=invalid_request` (`Missing parameter: code_challenge_method`)
-- `code_challenge_method=plain`: **HTTP `302 Found`** mit `?error=invalid_request` (`Invalid parameter: code challenge method is not matching the configured one`)
-- `code_challenge_method=S256`: **HTTP `200`** (Keycloak Login-Formular)
+## Lösung Aufgabe C & Bonus D
+- PKCE verhindert Code-Interception, weil ein Angreifer aus dem abgefangenen Einmal-`code` und dem Einweg-SHA-256-Hash (`code_challenge`) niemals den ursprünglichen geheimen `code_verifier` rekonstruieren kann.
+- In `lab/keycloak/realm-import.json` trägt nur `legacy-ropc-audit-client` die Einstellung `"directAccessGrantsEnabled": true` und ist als `DEPRECATED` gekennzeichnet.
 
-## Lösung Aufgabe C: Schutz vor Code-Interception
-
-1. Beim Start des Authorization-Flows erzeugt nur der legitime Client den zufälligen `code_verifier` und sendet ausschliesslich den Einweg-Hash (`code_challenge = SHA256(code_verifier)`) an den Authorization Server.
-2. Fängt ein Angreifer den `authorization_code` in der Redirect-URL ab, fehlt ihm der ursprüngliche `code_verifier` (SHA-256 ist nicht umkehrbar).
-3. Sendet der Angreifer den Code ohne oder mit falschem `code_verifier` an `/token`, schlägt der Hash-Vergleich fehl und der Authorization Server antwortet mit `400 invalid_grant`.
-
-## Lösung Bonus-Challenge D: Legacy-Audit
-
-Auf `bruno-pkce-client` ist `directAccessGrantsEnabled: false` gesetzt → ein Versuch mit `grant_type=password` scheitert direkt mit `400 unauthorized_client`.
+*(Für die automatisierte Shell-/`curl`-Variante siehe [Advanced A05](../advanced/A05-oauth21-pkce-oidc-curl.md).)*

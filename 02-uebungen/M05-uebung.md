@@ -1,9 +1,9 @@
 ---
 module_id: M05
-title: "Klassische Credentials & Secret-Hygiene"
+title: "Klassische Credentials & Secret-Hygiene in Bruno und SoapUI"
 level: "Stufe 2 - Sicherheit"
 duration_minutes: 90
-tools: ["curl", "Bruno (OpenCollection YAML)", "SoapUI Open Source 5.10.1", "git"]
+tools: ["Bruno Desktop (OpenCollection YAML)", "SoapUI Open Source 5.10.1"]
 standards: ["RFC 7617", "RFC 7616", "RFC 6750"]
 lab_services: ["go-httpbin"]
 prerequisites: ["M01", "M02"]
@@ -13,55 +13,52 @@ prerequisites: ["M01", "M02"]
 
 ## 1. Szenario und Zielzustand
 
-Ein Security-Audit hat gezeigt, dass Entwickelnde bisher Passwörter direkt per `curl -u user:pass` eingegeben und API-Keys in Bruno-Umgebungsdateien committet haben. Du sollst gegen `go-httpbin` (`http://localhost:8180`) alle vier klassischen Verfahren (**Basic**, **Digest**, **API-Key** und **Bearer Token**) umsetzen, ohne dass ein einziges Secret in der Shell-Historie oder in Git-Dateien landet.
+Ein Security-Audit hat ergeben, dass API-Keys bisher ungeschützt in Projektdateien gespeichert wurden. Du sollst in **Bruno Desktop** alle vier klassischen Authentifizierungsverfahren (**Basic**, **Digest**, **API-Key** und **Bearer Token**) gegen `go-httpbin` (`http://localhost:8180`) einrichten, dabei konsequent auf **Secret-Variablen (`secret: true`)** setzen und verstehen, warum Base64 keine Verschlüsselung bietet.
 
 ## 2. Aufgabenpakete
 
-### Aufgabe A: Sichere `curl`-Aufrufe ohne CLI-Passwörter
-1. Lade die Platzhalter-Credentials aus `lab/.env` (`source lab/.env` nach `set -a`).
-2. Rufe `http://localhost:8180/basic-auth/${HTTPBIN_BASIC_USER}/${HTTPBIN_BASIC_PASS}` über `curl -K -` (`stdin`) ab und prüfe HTTP `200 OK`.
-3. Rufe `http://localhost:8180/digest-auth/auth/${HTTPBIN_BASIC_USER}/${HTTPBIN_BASIC_PASS}` mit `curl --digest -K -` ab.
-4. Sende `X-Api-Key` an `http://localhost:8180/headers` und ein Bearer-Token an `http://localhost:8180/bearer` (ebenfalls via `-K -`).
+### Aufgabe A: Secret-Variablen in Bruno Desktop einrichten
+1. Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) in Bruno Desktop.
+2. Öffne die Environment-Konfiguration **`local`** und sieh dir `environments/local.yml` in einem Texteditor an: Alle Secrets haben `value: ""` und `secret: true`.
+3. Trage in der Bruno-Oberfläche (unter *Environments → local*) die Labor-Werte aus `lab/.env.example` (`basicPass`, `apiKey`, `bearerToken`) in die Secret-Felder ein und speichere.
+4. Öffne `environments/local.yml` erneut im Texteditor und prüfe, dass die eingetragenen Geheimnisse **nicht** im Klartext in der Datei erschienen sind.
 
-### Aufgabe B: Bruno `auth-hygiene-lab` mit `secret: true` & `--env-var`
-1. Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) und prüfe `environments/local.yml`: Alle Passwörter/Tokens haben `value: ""` und `secret: true`.
-2. Führe die vier Auth-Requests (Ordner `classic-auth/`) über `bru run` aus, indem du die Secrets erst zur Laufzeit via `--env-var` übergibst und Header aus dem Report ausblendest (`--reporter-skip-headers Authorization X-Api-Key`).
+### Aufgabe B: Alle vier klassischen Auth-Verfahren testen
+Führe im Ordner **`Classic Auth`** alle vier Requests der Reihe nach aus:
+1. `01-basic-auth` → erwartet `200 OK`, `"authorized": true`
+2. `02-digest-auth` → erwartet `200 OK`, `"authorized": true`
+3. `03-api-key` → erwartet `200 OK`, Header `X-Api-Key` gespiegelt
+4. `04-bearer-token` → erwartet `200 OK`, `"authenticated": true`
 
-### Aufgabe C: Secret-Hygiene-Audit im Repository
-1. Verifiziere per `git check-ignore`, dass sowohl `lab/.env` als auch `collections/bruno/auth-hygiene-lab/.env` ignoriert werden.
-2. Durchsuche das Arbeitsverzeichnis (`git grep`), um sicherzustellen, dass kein echtes oder aus `.env` kopiertes Passwort in getrackten Dateien liegt.
+### Aufgabe C: Base64-Kontrolle & Header-Hygiene prüfen
+1. Öffne bei `01-basic-auth` nach dem Senden den Bereich **Timeline** (oder gesendete Request-Header) und kopiere den Text hinter `Authorization: Basic ...`.
+2. Dekodiere diesen Base64-Text mit einem Base64-Decoder (oder in Bruno), um zu belegen, dass Benutzername und Passwort darin sofort im Klartext lesbar sind.
 
-### Bonus-Challenge D: `--netrc-file` & Base64-Dekodierung beweisen
-Führe den Basic-Auth-Request mittels `--netrc-file` aus, schneide den gesendeten `Authorization: Basic ...`-Header aus `curl -v` aus und dekodiere ihn mit `base64 -d`, um im Team zu demonstrieren, warum Basic Auth ohne TLS Klartext ist.
+### Bonus-Challenge D: `.env`-Alternativweg erkunden
+Öffne [collections/bruno/auth-hygiene-lab/.env.example](../collections/bruno/auth-hygiene-lab/.env.example) und informiere dich im Bruno-Handbuch über `{{$processEnv.NAME}}`, um Secrets lokal aus einer durch `.gitignore` geschützten `.env`-Datei zu laden.
+
+> **Hinweis:** Sichere Shell-Aufrufe mit `curl -K -` und `--netrc-file` findest du in [Advanced A03](../advanced/A03-secret-hygiene-curl.md).
 
 ## 3. Gestufte Hilfestellungen
 
 <details>
-<summary>Tipp 1 (Konzeptionell): Wie funktioniert -K - (stdin config) in curl?</summary>
+<summary>Tipp 1 (Konzeptionell): Wo speichert Bruno Secret-Variablen statt in local.yml?</summary>
 
-`-K -` weist `curl` an, Konfigurationszeilen (`user = "..."`, `header = "..."`, `oauth2-bearer = "..."`) über `stdin` (z. B. ein Heredoc `<<EOF`) einzulesen. Dadurch erscheinen keine Geheimnisse in der Prozessliste (`ps`) oder Befehlszeile.
+Bruno Desktop legt Werte, die als **Secret** (`secret: true`) markiert sind, lokal verschlüsselt im Benutzer-Speicher ab und schreibt nur den Namen + `secret: true` in die Git-versionierte YAML-Datei.
 
 </details>
 
 <details>
-<summary>Tipp 2 (Konkret): bru run Kommando für Aufgabe B</summary>
+<summary>Tipp 2 (Konkret): Welche Werte stehen in lab/.env.example?</summary>
 
-```bash
-set -a && source lab/.env && set +a
-cd collections/bruno/auth-hygiene-lab
-bru run classic-auth --env local \
-  --env-var "basicUser=${HTTPBIN_BASIC_USER}" \
-  --env-var "basicPass=${HTTPBIN_BASIC_PASS}" \
-  --env-var "apiKey=${HTTPBIN_API_KEY}" \
-  --env-var "bearerToken=${HTTPBIN_BEARER_TOKEN}" \
-  --reporter-skip-headers Authorization X-Api-Key
-```
+- `basicPass`: `CHANGE_ME_LAB_HTTPBIN`
+- `apiKey`: `CHANGE_ME_LAB_API_KEY`
+- `bearerToken`: `CHANGE_ME_LAB_STATIC_BEARER`
 
 </details>
 
 ## 4. Selbstkontrolle (Definition of Done)
 
-- [ ] Basic, Digest, API-Key und Bearer liefern gegen `go-httpbin` alle HTTP `200 OK`.
-- [ ] Kein Kommando übergibt Passwörter im Klartext als CLI-Argument (`-u user:pass`).
-- [ ] `collections/bruno/auth-hygiene-lab/environments/local.yml` enthält ausschliesslich leere `value: ""` + `secret: true` für Secrets.
-- [ ] `git status` und `scripts/curl/m05-auth-hygiene.sh` melden 0 Fehler und 0 Secret-Leaks.
+- [ ] Basic, Digest, API-Key und Bearer liefern in Bruno Desktop gegen `go-httpbin` alle HTTP `200 OK`.
+- [ ] `collections/bruno/auth-hygiene-lab/environments/local.yml` enthält weiterhin keine Klartext-Passwörter.
+- [ ] Du kannst erklären, warum Basic Auth nur mit HTTPS eingesetzt werden darf und API-Keys nicht in die URL gehören.

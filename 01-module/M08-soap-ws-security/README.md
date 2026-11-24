@@ -3,7 +3,7 @@ module_id: M08
 title: "SOAP WS-Security (WSS): UsernameToken, Signatur & Verschlüsselung"
 level: "Stufe 2 - Sicherheit"
 duration_minutes: 120
-tools: ["SoapUI Open Source 5.10.1", "keytool", "openssl", "curl"]
+tools: ["SoapUI Open Source 5.10.1"]
 standards: ["OASIS WS-Security 1.1", "UsernameToken Profile", "XML Signature", "XML Encryption"]
 lab_services: ["soap-service"]
 prerequisites: ["M03", "M04", "M07"]

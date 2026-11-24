@@ -3,8 +3,8 @@ module_id: M04
 title: "Assertions, Request-Chaining, Scripting & Mocking"
 level: "Stufe 1 - Grundlagen"
 duration_minutes: 120
-tools: ["Bruno (OpenCollection YAML)", "Bruno CLI (bru)", "SoapUI Open Source 5.10.1"]
-standards: ["OpenCollection YAML 1.0.0", "Chai Assertions", "XPath 1.0/2.0", "XQuery", "Groovy"]
+tools: ["Bruno Desktop (OpenCollection YAML)", "SoapUI Open Source 5.10.1"]
+standards: ["OpenCollection YAML 1.0.0", "Chai Assertions", "XPath 1.0/2.0", "Groovy"]
 lab_services: ["petstore3", "soap-service"]
 prerequisites: ["M02", "M03"]
 ---
@@ -14,81 +14,67 @@ prerequisites: ["M02", "M03"]
 ## 1. Lernziele
 
 Nach Abschluss dieses Moduls kannst du:
-1. Deklarative **Assertions** und programmatische **Chai-Tests** in Bruno gezielt kombinieren und per `bru run` auswerten.
-2. Dynamische Daten über **Request-Chaining** zwischen Requests weiterreichen und in Bruno sicher zwischen flüchtigen Runtime-Variablen (`bru.setVar()`) und persistenten Environment-Variablen (`bru.setEnvVar()`) **unterscheiden**.
-3. In **SoapUI Open Source 5.10.1** Test-Hierarchien (`TestSuite → TestCase → TestSteps`), `XPath Match`-Assertions, `Property Transfer` Steps, einfache Groovy-Skripte sowie einen lokalen **SOAP MockService** **konfigurieren**.
+1. Deklarative **Assertions** und geführte **Tests** in Bruno Desktop einrichten und über den integrierten **Collection Runner** ausführen.
+2. Dynamische Werte über **Request-Chaining** zwischen Requests weiterreichen und in Bruno sicher zwischen flüchtigen Runtime-Variablen (`bru.setVar()`) und gespeicherten Umgebungs-Variablen (`bru.setEnvVar()`) **unterscheiden**.
+3. In **SoapUI Open Source 5.10.1** Test-Hierarchien (`TestSuite → TestCase → TestSteps`), `XPath Match`-Assertions, `Property Transfer` Steps sowie einen lokalen **SOAP MockService** **konfigurieren**.
 4. Die Grenzen von SoapUI Open Source gegenüber **ReadyAPI** (z. B. codelose Excel/CSV-DataSource-Loops) transparent **einordnen**.
 
 ## 2. Architektur und Kernkonzepte
 
-Einzelne manuelle Requests reichen für verlässliche Qualitätssicherung nicht aus: Antworten müssen automatisiert geprüft (**Assertions**), dynamische IDs/Tokens an Folgerequests übergeben (**Chaining**) und nicht verfügbare Drittsysteme lokal simuliert (**Mocking**) werden.
+Wenn eine API Antwortdaten liefert (z. B. eine neu vergebene Bestellnummer `ORD-42`), müssen wir diese für nachfolgende Schritte oft automatisch übernehmen (**Chaining**) und das Ergebnis automatisch prüfen (**Assertions**), statt Zahlen von Hand abzutippen.
 
-### Vergleichstabelle: Test- & Chaining-Konzepte in Bruno vs. SoapUI OS 5.10.1
+### Vergleichstabelle: Test- & Chaining-Konzepte in Bruno Desktop vs. SoapUI OS 5.10.1
 
-| Konzept | Bruno (OpenCollection YAML) | SoapUI Open Source 5.10.1 |
+| Konzept | Bruno Desktop (OpenCollection YAML) | SoapUI Open Source 5.10.1 |
 | :--- | :--- | :--- |
-| **Test-Struktur** | Collection → Folder (`folder.yml`) → Request (`.yml`) | Project → `TestSuite` → `TestCase` → `TestSteps` |
-| **Deklarative Prüfung** | `runtime.assertions` (`eq`, `neq`, `isString`, `isNumber`) | `Contains`, `Not Contains`, `XPath Match`, `XQuery Match`, `JSONPath Match`, `SOAP Response` |
-| **Skript-Sprache** | JavaScript + Chai (`expect(res.status).to.equal(200)`) | Groovy (`testRunner`, `context`, `XmlHolder`) |
-| **Request-Chaining** | `after-response`-Skript mit `bru.setVar("id", res.body.id)` | `Property Transfer` TestStep (XPath-Quelle → Ziel-Request) oder Groovy-Property-Write |
-| **Data-Driven Testing** | Nativ in CLI via `--csv-file-path` / `--json-file-path` | **Nicht codelos in OS enthalten!** (Excel/CSV-DataSource-Loops sind **ReadyAPI-only**; in OS nur über Groovy-Workarounds) |
-| **Mocking** | Bruno Mock Server / lokale Dev-Server | Eingebauter **SOAP MockService** (lokaler HTTP-Port mit statischen oder Groovy-Dispatch-Antworten) |
+| **Test-Struktur** | Collection → Folder → Request (`.yml`) | Project → `TestSuite` → `TestCase` → `TestSteps` |
+| **Einfache Prüfung ohne Code** | **Assert-Tab** (`res.status eq 200`) | `Contains`, `Not Contains`, `XPath Match`, `SOAP Response` |
+| **Skript-Tests** | **Tests-Tab** (`expect(res.status).to.equal(200)`) | `Groovy Script` / `Script Assertion` |
+| **Request-Chaining** | **Script-Tab (Post Response):** `bru.setVar("id", res.body.id)` | **`Property Transfer`** TestStep (XPath-Quelle → Ziel-Request) |
+| **Data-Driven Testing** | Collection Runner mit CSV/JSON-Datei | **Nicht codelos in OS enthalten!** (Excel/CSV-DataSource-Loops sind **ReadyAPI-only**) |
+| **Mocking** | Bruno Mock Server | Eingebauter **SOAP MockService** (lokaler HTTP-Port für Offline-Tests) |
 
-### Kritischer Fallstrick in Bruno v4: `bru.setVar()` vs. `bru.setEnvVar()`
+### Kritischer Fallstrick in Bruno: `bru.setVar()` vs. `bru.setEnvVar()`
 
-- **`bru.setVar("petId", ...)`**: Speichert die Variable **flüchtig im Arbeitsspeicher** für den aktuellen Run (ideal für IDs und Session-Tokens!).
-- **`bru.setEnvVar("petId", ...)`**: Ändert die **Environment-Variable** und wird in Bruno v4 standardmässig **auf die Festplatte (`environments/*.yml`) persistiert** — was zu ungewollten Git-Diffs führt!
+- **`bru.setVar("petId", ...)`**: Merkt sich den Wert **nur während des aktuellen Laufs im Arbeitsspeicher** (ideal für IDs!).
+- **`bru.setEnvVar("petId", ...)`**: Schreibt die Änderung dauerhaft in die Datei `environments/local.yml` auf der Festplatte.
 
-## 3. Geführter Walkthrough (`Bruno` & `SoapUI`)
+## 3. Geführter Walkthrough (`Bruno Desktop` & `SoapUI`)
 
-### `Bruno` (Chaining + Tests + `bru run`)
+### `Bruno Desktop` (Chaining + Assert-Tab + Collection Runner)
 
-Öffne [collections/bruno/petstore-lab](../../collections/bruno/petstore-lab/opencollection.yml) und inspiziere die Kette im Ordner `pets/`:
-1. `01-create-pet.yml`: Legt `id: 4041` an und speichert die ID im `after-response`-Block:
-   ```javascript
-   bru.setVar("petId", String(res.body.id));
-   ```
-2. `03-get-pet-by-id.yml`: Ruft `{{baseURL}}/pet/{{petId}}` auf und prüft per Chai-Test:
-   ```javascript
-   test("Verkettete Pet-ID stimmt ueberein", function() {
-     expect(res.status).to.equal(200);
-     expect(String(res.body.id)).to.equal(String(bru.getVar("petId")));
-   });
-   ```
-3. Ausführen per CLI (mit JUnit-Ausgabe für CI):
-   ```bash
-   cd collections/bruno/petstore-lab
-   bru run -r --env local --reporter-junit /tmp/petstore-junit.xml
-   ```
+1. Öffne [collections/bruno/petstore-lab](../../collections/bruno/petstore-lab/opencollection.yml) in Bruno Desktop und wähle Environment **`local`**.
+2. Sieh dir in `01-create-pet` die Tabs **Assert** (`res.status eq 200`), **Script → Post Response** (`bru.setVar("petId", String(res.body.id));`) und **Tests** an.
+3. Klicke auf das **Runner-Symbol** (Collection/Folder *Run*) auf dem Ordner `pets` und starte alle 4 Requests hintereinander: `03-get-pet-by-id` verwendet automatisch `{{petId}}` aus Schritt 1!
 
 ### `SoapUI Open Source 5.10.1` (`Property Transfer` + `XPath Match` + `MockService`)
 
-Öffne das vorbereitete Projekt [order-service-soapui-project.xml](../../collections/soapui/order-service-soapui-project.xml) in SoapUI OS 5.10.1:
-1. Öffne `OrderServiceTestSuite → OrderChainingTestCase`.
-2. Ablauf der TestSteps:
-   - **Step 1 (`CreateOrder`)**: Sendet einen gültigen Auftrag und prüft mit einer **SOAP Response** + **XPath Match** Assertion (`declare namespace tns='http://api-schulung.local/orders/v1'; exists(//tns:CreateOrderResponse/tns:orderId)`).
-   - **Step 2 (`TransferOrderId`)**: *Property Transfer* liest `//tns:CreateOrderResponse/tns:orderId` aus Step 1 (`Response`) und schreibt ihn in `//tns:GetOrderRequest/tns:orderId` von Step 3 (`Request`).
-   - **Step 3 (`GetOrder`)**: Ruft den zuvor erzeugten Auftrag ab und prüft per **XPath Match**, dass `<tns:status>` den Wert `CREATED` hat.
-3. **SOAP MockService starten:** Rechtsklick auf `OrderServiceSoap11Binding → Generate MockService` (Port z. B. `8088`, Pfad `/mockOrderService`), grünen Play-Button klicken und eine Test-Antwort simulieren.
+1. Öffne [order-service-soapui-project.xml](../../collections/soapui/order-service-soapui-project.xml) in SoapUI OS 5.10.1.
+2. Klappe `OrderServiceTestSuite → OrderChainingTestCase` auf:
+   - **Step 1 (`CreateOrder`)**: Legt Auftrag an und prüft mit **XPath Match** (`//tns:CreateOrderResponse/tns:status = CREATED`).
+   - **Step 2 (`TransferOrderId`)**: *Property Transfer* kopiert die erzeugte `orderId` automatisch aus der Response in den nächsten Request.
+   - **Step 3 (`GetOrder`)**: Ruft den Auftrag ab und prüft per **XPath Match** auf `CUST-CHAIN-01`.
+3. Klicke im `OrderChainingTestCase` auf den grünen Play-Button, sodass alle 3 Steps automatisch grün durchlaufen.
+4. Öffne **`OrderServiceMock`** im Projektbaum und starte ihn über den grünen Play-Button (Port `8088`), um Antworten unabhängig vom Docker-Container zu simulieren.
+
+> **Für Fortgeschrittene (CI-Ausführung per CLI):** Wie du diese Collections automatisiert über `bru run` auf der Shell startest, erklärt [Advanced A06](../../advanced/A06-token-lifecycle-bruno-cli-cicd.md).
 
 ## 4. Typische Fallstricke und Troubleshooting
 
 | Fehlerbild | Ursache | Diagnose & Lösung |
 | :--- | :--- | :--- |
-| `git status` zeigt ungewollte Änderungen in `environments/local.yml` | Im Post-Response-Skript wurde `bru.setEnvVar()` statt `bru.setVar()` genutzt | Auf `bru.setVar()` umstellen und `environments/*.yml` sauber zurücksetzen |
-| XPath Match Assertion schlägt in SoapUI trotz vorhandenem Element fehl | XML-Namespace (`tns:`) wurde im XPath-Ausdruck nicht deklariert | Im XPath-Editor oben `Declare`-Button klicken oder `declare namespace tns='http://api-schulung.local/orders/v1';` voranstellen |
-| Property Transfer kopiert leeren Wert | Falscher Quell- oder Ziel-Property-Typ (`ResponseAsXml` vs. `Response` / `Request`) | In SoapUI sicherstellen, dass Quelle `Response` und Ziel `Request` ausgewählt sind |
-| `bru run` bricht bei `--csv-file-path` in Safe Mode ab | Skript nutzt Node-Module (`fs`), die `--sandbox=developer` benötigen | Standard-JavaScript/Chai benötigt nur `safe`-Mode; niemals unnötig `developer` verlangen |
+| In `environments/local.yml` tauchen unerwartet IDs auf | Es wurde `bru.setEnvVar()` statt `bru.setVar()` verwendet | Auf `bru.setVar()` umstellen |
+| XPath Match Assertion schlägt in SoapUI trotz vorhandenem Element fehl | XML-Namespace (`tns:`) wurde im XPath-Ausdruck nicht deklariert | Im XPath-Editor oben auf **Declare** klicken (`declare namespace tns='http://api-schulung.local/orders/v1';`) |
+| Property Transfer kopiert leeren Wert | Falscher Property-Typ gewählt | Quelle auf `Response`, Ziel auf `Request` prüfen |
 
 ## 5. Spickzettel (Cheat Sheet)
 
 | Werkzeug | Konstrukt | Beispiel |
 | :--- | :--- | :--- |
-| **Bruno** | Runtime-Variable setzen/lesen | `bru.setVar("id", res.body.id)` / `bru.getVar("id")` |
-| **Bruno** | Chai-Statusprüfung | `test("OK", () => expect(res.status).to.equal(200));` |
-| **Bruno CLI** | Rekursiver Lauf mit Daten | `bru run -r --env local --csv-file-path data.csv` |
+| **Bruno** | Flüchtige Variable setzen/lesen | `bru.setVar("id", res.body.id)` / `{{id}}` |
+| **Bruno** | Statuscode im Tests-Tab prüfen | `test("OK", () => expect(res.status).to.equal(200));` |
 | **SoapUI** | XPath mit Namespace | `declare namespace tns='http://api-schulung.local/orders/v1'; //tns:status` |
-| **SoapUI** | Groovy-Zugriff auf TestCase-Property | `testRunner.testCase.setPropertyValue("orderId", "ORD-1")` |
+| **SoapUI** | MockService Endpoint | `http://localhost:8088/mockOrderService` |
 
 ## 6. Querverweise
 

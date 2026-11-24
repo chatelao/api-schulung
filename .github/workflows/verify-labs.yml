@@ -152,11 +152,11 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
 
-      - name: Gebaute MkDocs-Site als Pages-Artifact hochladen
+      - name: Interaktives Lernstudio (interactive/) als Pages-Artifact hochladen
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: interactive
 
       - name: Labor-Container bei Abschluss stoppen
         if: always()

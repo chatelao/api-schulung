@@ -1,38 +1,14 @@
-# Musterlösung M02: Swagger / OpenAPI & Bruno (OpenCollection YAML)
+# Musterlösung M02: Swagger / OpenAPI & Bruno Desktop
 
-## Lösung Aufgabe A: OpenAPI-Anatomie
+## Lösung Aufgabe A: OpenAPI-Anatomie (`http://localhost:8080/api/v3/openapi.json`)
+- **Schemas:** `Order`, `Customer`, `Address`, `Category`, `User`, `Tag`, `Pet`, `ApiResponse`
+- **Pflichtfelder in `Pet` (`required`):** `["name", "photoUrls"]`
+- **Erlaubte Statuswerte (`status.enum`):** `["available", "pending", "sold"]`
 
-```bash
-curl -sS http://localhost:8080/api/v3/openapi.json \
-  | jq '{openapi, schemas: (.components.schemas | keys), pet_required: .components.schemas.Pet.required, pet_status_enum: .components.schemas.Pet.properties.status.enum}'
-```
-
-Erwartetes Ergebnis:
-- `required`: `["name", "photoUrls"]`
-- `pet_status_enum`: `["available", "pending", "sold"]`
-
-## Lösung Aufgabe B: OpenAPI-Import per Bruno CLI
-
-```bash
-bru import openapi \
-  --source http://localhost:8080/api/v3/openapi.json \
-  --output /tmp/my-petstore-yaml \
-  --collection-name "My Petstore" \
-  --collection-format=opencollection
-
-# Pruefen, dass sortenreines YAML erzeugt wurde (keine .bru-Dateien):
-find /tmp/my-petstore-yaml -name "*.bru"   # leere Ausgabe
-ls -la /tmp/my-petstore-yaml/opencollection.yml
-```
-
-## Lösung Aufgabe C: Parametrisierte Bruno-Collection ausführen
-
-Die fertige OpenCollection-YAML-Referenz befindet sich unter [collections/bruno/petstore-lab/](../collections/bruno/petstore-lab/opencollection.yml):
-
-```bash
-cd collections/bruno/petstore-lab
-bru run -r --env local
-```
+## Lösung Aufgabe B & C: Bruno Desktop OpenCollection YAML
+- Im Root-Ordner liegt `opencollection.yml` mit der Kopfzeile `opencollection: 1.0.0`.
+- In `environments/local.yml` steht `baseURL: http://localhost:8080/api/v3`.
+- Alle vier Requests unter `collections/bruno/petstore-lab/pets/` nutzen `{{baseURL}}` und liefern bei gewähltem Environment `local` `200 OK`.
 
 ## Lösung Bonus-Challenge D: OpenAPI 3.1 Snippet
 
@@ -62,3 +38,5 @@ webhooks:
         "200":
           description: Webhook bestaetigt
 ```
+
+*(Für den automatisierten CLI-Import per `bru import openapi` siehe [Advanced A06](../advanced/A06-token-lifecycle-bruno-cli-cicd.md).)*

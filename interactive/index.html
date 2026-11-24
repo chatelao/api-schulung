@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API-Schulung Interactive Studio — Einsteiger-Lehrgang &amp; Advanced curl</title>
+  <meta name="description" content="Interaktives API-Lernstudio für REST/OpenAPI, SOAP/WSDL, WS-Security, TLS/mTLS, OAuth 2.1, OIDC sowie Advanced curl: Lernplan-Tracker, Checkpoints (CP-0 bis CP-3), HTTP/URL-Baukasten, OpenAPI Security Tester, OAuth 2.1 PKCE &amp; JWT-Inspektor, Flashcards und Mock Exam." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Direkt zum Hauptinhalt springen</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-code">API-LAB</span>
+        <div>
+          <span class="brand-title">API-Schulung Learning Studio</span>
+          <span class="brand-sub">Basis (Bruno &amp; SoapUI, ohne Shell-Ballast) &middot; Advanced (curl)</span>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Hauptbereiche" role="tablist">
+        <button class="nav-btn active" role="tab" aria-selected="true" aria-controls="view-curriculum" data-view="curriculum" id="nav-curriculum">Lernplan (M00–A06)</button>
+        <button class="nav-btn" role="tab" aria-selected="false" aria-controls="view-checkpoints" data-view="checkpoints" id="nav-checkpoints">Checkpoints (CP-0..3)</button>
+        <button class="nav-btn" role="tab" aria-selected="false" aria-controls="view-labs" data-view="labs" id="nav-labs">Interaktive Labs</button>
+        <button class="nav-btn" role="tab" aria-selected="false" aria-controls="view-flashcards" data-view="flashcards" id="nav-flashcards">Flashcards</button>
+        <button class="nav-btn" role="tab" aria-selected="false" aria-controls="view-mock" data-view="mock" id="nav-mock">Mock Exam</button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn btn-sm btn-secondary" id="beamer-toggle-btn" type="button" aria-pressed="false" title="Grössere Schrift für Beamer &amp; Screen-Share">Beamer-Modus</button>
+        <a class="permalink-pill" id="global-permalink" href="#curriculum" title="Permanente URL zu diesem Bereich">&#x1F517; Permalink</a>
+        <a class="docs-link" href="https://api-schulung.readthedocs.io/de/latest/" target="_blank" rel="noopener">Read the Docs Lehrgang &nearr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-shell" id="main-content">
+    <!-- VIEW 1: CURRICULUM TRACKER -->
+    <section id="view-curriculum" class="view active" role="tabpanel" aria-labelledby="curriculum-heading">
+      <div class="section-head">
+        <div>
+          <h1 id="curriculum-heading">Lernplan: Einstieg bis Advanced</h1>
+          <p class="lead">Der Basis-Lehrgang (<code>M00</code>–<code>M12</code> + <code>CAP</code>) kommt ohne Shell- und Netzwerk-Vorkenntnisse aus (Bruno Desktop &amp; SoapUI OS). Der <strong>Advanced-Track</strong> (<code>A01</code>–<code>A06</code>) bündelt alle <code>curl</code>- &amp; CLI-Übungen. Dein Fortschritt wird lokal gespeichert.</p>
+        </div>
+        <div class="progress-summary" id="lesson-progress-summary">
+          <div class="metric-value"><span id="lessons-done-count">0 / 20</span></div>
+          <div class="metric-label">Module abgeschlossen (<span id="lessons-done-pct">0%</span>)</div>
+          <div class="progress-track"><div class="progress-fill" id="lessons-progress-bar"></div></div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-group">
+          <label for="phase-filter">Stufe:</label>
+          <select id="phase-filter"></select>
+        </div>
+        <div class="filter-group">
+          <label for="lesson-search">Suche:</label>
+          <input type="search" id="lesson-search" placeholder="HTTP, OpenAPI, SOAP, mTLS, PKCE, curl..." />
+        </div>
+        <div class="filter-group">
+          <label for="variant-select">Lab-Modus:</label>
+          <select id="variant-select">
+            <option value="A">Lokales Docker-Labor (empfohlen)</option>
+            <option value="B">Öffentliche Fallback-Sandboxes</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" id="export-state-btn" type="button">Lernstand sichern (.json)</button>
+        <button class="btn btn-secondary" id="import-state-btn" type="button">Lernstand laden (.json)</button>
+        <input type="file" id="import-state-file" accept=".json,application/json" hidden />
+        <button class="btn btn-secondary" id="reset-lessons-btn" type="button">Fortschritt zurücksetzen</button>
+      </div>
+
+      <div id="variant-banner" role="status" aria-live="polite" class="callout callout-info"></div>
+      <div id="phases-container" class="phases-list"></div>
+    </section>
+
+    <!-- VIEW 2: CHECKPOINTS -->
+    <section id="view-checkpoints" class="view" role="tabpanel" aria-labelledby="checkpoints-heading">
+      <div class="section-head">
+        <div>
+          <h1 id="checkpoints-heading">Fortschritts-Checkpoints (CP-0 bis CP-3)</h1>
+          <p class="lead">Prüfe deinen Wissenstand vor Kursbeginn (<code>CP-0</code>), nach den Grundlagen (<code>CP-1</code>), nach Sicherheit (<code>CP-2</code>) und am Ende (<code>CP-3</code>) mit denselben 12 Standardfragen.</p>
+        </div>
+        <div class="checkpoint-actions">
+          <button class="btn btn-secondary" id="export-cp-json" type="button">JSON exportieren</button>
+        </div>
+      </div>
+
+      <div class="cp-selector-strip" id="cp-selector-strip"></div>
+
+      <div class="cp-layout">
+        <div class="cp-panel" id="cp-workspace"></div>
+        <aside class="cp-sidebar">
+          <div class="panel-box">
+            <h2>Lernverlauf (CP-0 &rarr; CP-3)</h2>
+            <p class="muted-sm">Gesamtscore (%) über alle absolvierten Checkpoints.</p>
+            <div id="cp-chart-container" class="chart-box"></div>
+          </div>
+          <div class="panel-box">
+            <h2>Domain Mastery Matrix</h2>
+            <div id="cp-domain-matrix"></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- VIEW 3: INTERACTIVE LABS -->
+    <section id="view-labs" class="view" role="tabpanel" aria-labelledby="labs-heading">
+      <div class="section-head">
+        <div>
+          <h1 id="labs-heading">Interaktive API-Labs &amp; Visualisierer</h1>
+          <p class="lead">Spielerische Browser-Werkzeuge für HTTP/URLs, OpenAPI-Sicherheitsregeln, OAuth 2.1 PKCE, JWT/OIDC, SOAP/WSS sowie der Live-Status unserer CI/CD-Testläufe.</p>
+        </div>
+      </div>
+
+      <div class="lab-tabs" role="tablist" aria-label="Interaktive Labs">
+        <button class="lab-tab active" data-lab="http" role="tab" aria-selected="true">1. HTTP &amp; URL Baukasten</button>
+        <button class="lab-tab" data-lab="openapi" role="tab" aria-selected="false">2. OpenAPI Security Tester</button>
+        <button class="lab-tab" data-lab="oauth" role="tab" aria-selected="false">3. OAuth 2.1 PKCE &amp; JWT Inspektor</button>
+        <button class="lab-tab" data-lab="soap" role="tab" aria-selected="false">4. SOAP 1.1/1.2 &amp; WS-Security</button>
+        <button class="lab-tab" data-lab="ci" role="tab" aria-selected="false">5. CI/CD Testergebnisse</button>
+      </div>
+
+      <!-- LAB 1: HTTP & URL BAUKASTEN -->
+      <div class="lab-pane active" id="lab-http">
+        <div class="card">
+          <h2>HTTP-Anfrage zusammenbauen &amp; URL verstehen</h2>
+          <p class="muted-sm">Wähle eine Methode, ein Ziel und einen Body-Typ — sieh sofort die URL-Zerlegung, die passende Antwort-Erklärung und (optional für Advanced) das äquivalente <code>curl</code>-Kommando.</p>
+          <div class="grid-3">
+            <div>
+              <label class="field-label" for="http-method">HTTP-Methode</label>
+              <select id="http-method">
+                <option value="GET">GET (Lesen)</option>
+                <option value="POST" selected>POST (Neu anlegen)</option>
+                <option value="PUT">PUT (Ersetzen)</option>
+                <option value="DELETE">DELETE (Löschen)</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="http-target">Ziel-Endpunkt (Petstore / Echo)</label>
+              <select id="http-target">
+                <option value="http://localhost:8080/api/v3/pet">Petstore: /api/v3/pet</option>
+                <option value="http://localhost:8080/api/v3/pet/2026">Petstore: /api/v3/pet/2026</option>
+                <option value="http://localhost:8080/api/v3/pet/99999999">Petstore: /api/v3/pet/99999999 (Unbekannt)</option>
+                <option value="http://localhost:8180/headers">Echo: /headers</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="http-content-type">Body-Format (Content-Type)</label>
+              <select id="http-content-type">
+                <option value="application/json" selected>JSON (application/json)</option>
+                <option value="text/plain">Nur Text (text/plain)</option>
+              </select>
+            </div>
+          </div>
+          <div id="http-sim-output" class="sim-output"></div>
+        </div>
+      </div>
+
+      <!-- LAB 2: OPENAPI SECURITY TESTER -->
+      <div class="lab-pane" id="lab-openapi">
+        <div class="card">
+          <h2>OpenAPI 3.1 <code>securitySchemes</code> — UND vs. ODER Simulator</h2>
+          <p class="muted-sm">Kombiniere Authentifizierungs-Bausteine und prüfe live, welche Regel in OpenAPI 3.1 greift.</p>
+          <div class="grid-2">
+            <div>
+              <label class="field-label" for="oas-rule">Endpoint-Sicherheitsregel</label>
+              <select id="oas-rule">
+                <option value="public">/status/200 &mdash; security: [] (Öffentlich)</option>
+                <option value="or">/headers &mdash; apiKeyAuth ODER bearerAuth</option>
+                <option value="optional">/catalog &mdash; {} ODER apiKeyAuth (Optional)</option>
+                <option value="and">/admin &mdash; mtlsAuth UND oauth2Auth (Beide nötig)</option>
+              </select>
+              <div class="checkbox-stack">
+                <label><input type="checkbox" id="oas-has-apikey" /> Client sendet <code>X-Api-Key</code></label>
+                <label><input type="checkbox" id="oas-has-bearer" /> Client sendet <code>Authorization: Bearer ...</code></label>
+                <label><input type="checkbox" id="oas-has-mtls" /> Client präsentiert gültiges mTLS-Zertifikat</label>
+              </div>
+            </div>
+            <div id="oas-sim-output" class="sim-output"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAB 3: OAUTH 2.1 PKCE & JWT INSPEKTOR -->
+      <div class="lab-pane" id="lab-oauth">
+        <div class="card">
+          <h2>OAuth 2.1 PKCE (<code>S256</code>) Generator &amp; ID- vs. Access-Token-Inspektor</h2>
+          <p class="muted-sm">Berechne ein echtes kryptografisches PKCE-Paar direkt im Browser (WebCrypto SHA-256) und vergleiche, warum ein <strong>ID Token</strong> niemals an eine Fach-API gesendet werden darf.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-gen-pkce" type="button">Neues PKCE S256 Paar erzeugen</button>
+            <button class="btn btn-secondary" id="btn-load-access-jwt" type="button">Beispiel Access Token laden</button>
+            <button class="btn btn-secondary" id="btn-load-id-jwt" type="button">Beispiel ID Token laden</button>
+          </div>
+          <div id="pkce-output" class="sim-output"></div>
+          <label class="field-label" for="jwt-input">JWT zum Inspizieren (Base64URL — Dekodieren &ne; Verifizieren!)</label>
+          <textarea id="jwt-input" rows="3" placeholder="Header.Payload.Signatur hier einfügen oder Beispiel-Button oben klicken..."></textarea>
+          <div id="jwt-output" class="sim-output"></div>
+        </div>
+      </div>
+
+      <!-- LAB 4: SOAP & WS-SECURITY -->
+      <div class="lab-pane" id="lab-soap">
+        <div class="card">
+          <h2>SOAP 1.1 vs. 1.2 &amp; WS-Security Outgoing-Reihenfolge</h2>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btn-soap-11" type="button">SOAP 1.1 anzeigen</button>
+            <button class="btn btn-secondary" id="btn-soap-12" type="button">SOAP 1.2 anzeigen</button>
+            <button class="btn btn-secondary" id="btn-wss-good" type="button">WSS Reihenfolge: Richtig</button>
+            <button class="btn btn-secondary" id="btn-wss-bad" type="button">WSS Reihenfolge: Fehlerhaft</button>
+          </div>
+          <div id="soap-output" class="sim-output"></div>
+        </div>
+      </div>
+
+      <!-- LAB 5: CI/CD RESULTS -->
+      <div class="lab-pane" id="lab-ci">
+        <div class="card">
+          <h2>Automatisierte CI/CD-Verifikation (GitHub Actions)</h2>
+          <p class="muted-sm">Live-Übersicht der zuletzt im CI-Workflow ausgeführten Labor-, <code>curl</code>-, Bruno- und Capstone-Prüfungen.</p>
+          <div id="ci-results-output" class="sim-output"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: FLASHCARDS -->
+    <section id="view-flashcards" class="view" role="tabpanel" aria-labelledby="flashcards-heading">
+      <div class="section-head">
+        <div>
+          <h1 id="flashcards-heading">Flashcards: API-Begriffe &amp; Sicherheit</h1>
+          <p class="lead">Trainiere Kernbegriffe aus HTTP, OpenAPI, SOAP, TLS/mTLS, OAuth 2.1, OIDC und (optional) <code>curl</code>. Klicken oder Leertaste dreht die Karte um.</p>
+        </div>
+        <div class="toolbar-compact">
+          <select id="fc-category-filter"></select>
+          <span id="fc-counter" class="badge">1 / 1</span>
+        </div>
+      </div>
+
+      <div class="flashcard-stage">
+        <div class="flashcard" id="flashcard-card" tabindex="0" role="button" aria-label="Lernkarte umdrehen">
+          <div class="flashcard-inner">
+            <div class="flashcard-front">
+              <span class="fc-tag" id="fc-cat-badge"></span>
+              <h2 id="fc-question"></h2>
+              <p class="muted-sm">Klicken zum Aufdecken</p>
+            </div>
+            <div class="flashcard-back">
+              <span class="fc-tag">Antwort</span>
+              <p id="fc-answer"></p>
+              <p class="fc-hint" id="fc-hint"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="fc-controls">
+          <button class="btn btn-secondary" id="fc-prev" type="button">&larr; Zurück</button>
+          <button class="btn btn-danger-soft" id="fc-rate-again" type="button">Nochmal</button>
+          <button class="btn btn-amber-soft" id="fc-rate-unsure" type="button">Unsicher</button>
+          <button class="btn btn-green-soft" id="fc-rate-known" type="button">Gewusst &#x2713;</button>
+          <button class="btn btn-secondary" id="fc-next" type="button">Weiter &rarr;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: MOCK EXAM -->
+    <section id="view-mock" class="view" role="tabpanel" aria-labelledby="mock-heading">
+      <div class="section-head">
+        <div>
+          <h1 id="mock-heading">Abschluss-Quiz (Mock Exam)</h1>
+          <p class="lead">15 praxisnahe Fragen über den gesamten Kurs (HTTP, OpenAPI, SOAP/WSS, TLS/mTLS, OAuth 2.1, OIDC) inklusive Sofort-Erklärung.</p>
+        </div>
+        <div class="mock-timer-box">
+          <span id="mock-timer">20:00</span>
+          <button class="btn btn-primary" id="mock-start-btn" type="button">Quiz starten</button>
+        </div>
+      </div>
+      <div id="mock-container" class="card"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span><strong>api-schulung</strong> &middot; Stand November 2026</span>
+      <span><a href="https://api-schulung.readthedocs.io/de/latest/" target="_blank" rel="noopener">Read the Docs Lehrgang</a> &middot; <a href="https://github.com/chatelao/api-schulung" target="_blank" rel="noopener">GitHub Repository</a></span>
+    </div>
+  </footer>
+
+  <script src="js/data-curriculum.js"></script>
+  <script src="js/data-questions.js"></script>
+  <script src="js/data-ci-results.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

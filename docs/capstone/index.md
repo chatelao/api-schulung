@@ -28,9 +28,9 @@ Deine Aufgabe ist es, den vollständigen Ende-zu-Ende-Prozess **reproduzierbar, 
 3. Validere die Antwort per **XPath Match** (`//tns:signatureVerified = 'true'`) und **WS-Security Status Assertion**.
 
 ### Teil 4: Automatisierung, Revocation & Hygiene-Abnahme (40 Min)
-1. Führe die komplette Bruno-Capstone-Suite mit Custom CA und mTLS via `bru run -r --env local` aus.
-2. Widerrufe das verwendete Token sauber via **RFC 7009 (`/revoke`)** und belege per **RFC 7662 (`/token/introspect`)** `active: false`.
-3. Führe `./04-projekte/capstone-hybrid-order/verify-capstone.sh` aus und weise per `git status` / `git diff` nach, dass **null** Credentials, `.env`-Dateien oder private Schlüssel getrackt wurden.
+1. Starte die komplette Bruno-Capstone-Suite über den **Bruno Collection Runner** (Umgebung `local`, Secret `m2mClientSecret = CHANGE_ME_LAB_M2M_SECRET` und hinterlegtes mTLS-Client-Zertifikat für `localhost`).
+2. Prüfe im letzten Schritt (`07-verify-revoked-introspect`), dass das Token sauber per **RFC 7009 (`/revoke`)** widerrufen wurde (`active: false`).
+3. *(Optional / Advanced CLI):* Wer die Abnahme im Terminal ausführen möchte, startet `./04-projekte/capstone-hybrid-order/verify-capstone.sh` (siehe [Advanced A06](../advanced/A06.md)) und prüft per `git status`, dass keine Secrets oder privaten Schlüssel versioniert wurden.
 
 ## 3. Abnahme-Skript & Bewertungsrubrik
 

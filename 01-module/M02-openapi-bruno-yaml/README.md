@@ -3,7 +3,7 @@ module_id: M02
 title: "Swagger / OpenAPI (2.0, 3.0, 3.1) lesen & mit Bruno nutzen"
 level: "Stufe 1 - Grundlagen"
 duration_minutes: 120
-tools: ["Bruno (OpenCollection YAML)", "Bruno CLI (bru)", "curl", "jq"]
+tools: ["Bruno Desktop (OpenCollection YAML)", "Webbrowser (Swagger UI)"]
 standards: ["OpenAPI 3.0.3", "OpenAPI 3.1.0", "JSON Schema 2020-12", "OpenCollection YAML 1.0.0"]
 lab_services: ["petstore3"]
 prerequisites: ["M00", "M01"]
@@ -14,14 +14,14 @@ prerequisites: ["M00", "M01"]
 ## 1. Lernziele
 
 Nach Abschluss dieses Moduls kannst du:
-1. Die Struktur eines OpenAPI-Dokuments (`openapi`, `info`, `servers`, `paths`, `webhooks`, `components.schemas`, `$ref`) systematisch **lesen** und interpretieren.
+1. Die Struktur eines **OpenAPI-Dokuments** (`openapi`, `info`, `servers`, `paths`, `webhooks`, `components.schemas`, `$ref`) systematisch **lesen** und im Browser nachvollziehen.
 2. Unterschiede zwischen **Swagger 2.0**, **OpenAPI 3.0** und **OpenAPI 3.1** (JSON-Schema-Angleichung, nullable-Typen, `webhooks`) präzise **einordnen**.
-3. OpenAPI-Spezifikationen sowohl über die Bruno-GUI als auch automatisiert über `bru import openapi` in das **OpenCollection-YAML-Format (`.yml`)** **überführen**.
-4. Umgebungen (`environments/local.yml`) mit `{{baseURL}}` in Bruno sauber parametrisieren und Änderungen im Git-Diff **prüfen**.
+3. Eine OpenAPI-Spezifikation über **Bruno Desktop** direkt in das **OpenCollection-YAML-Format (`.yml`)** **importieren**.
+4. Umgebungen (`local` mit `{{baseURL}}`) in Bruno anlegen, sodass keine Server-Adressen hartkodiert werden.
 
 ## 2. Architektur und Kernkonzepte
 
-Eine **OpenAPI-Spezifikation (OAS)** ist der maschinenlesbare Vertrag einer REST-API. Sie beschreibt *welche* Endpunkte, HTTP-Methoden, Parameter (`path`, `query`, `header`, `cookie`), Request-Bodies, Response-Schemas und Sicherheitsverfahren existieren — jedoch keine konkreten Testabläufe.
+Eine **OpenAPI-Spezifikation (OAS)** ist der digitale Bauplan (Vertrag) einer REST-API. Sie beschreibt, *welche* URL-Pfade, HTTP-Methoden, Parameter (`path`, `query`, `header`, `cookie`) und Datenstrukturen existieren — ähnlich wie eine Speisekarte im Restaurant.
 
 ### Vergleichstabelle: Swagger 2.0 vs. OpenAPI 3.0 vs. OpenAPI 3.1
 
@@ -29,73 +29,54 @@ Eine **OpenAPI-Spezifikation (OAS)** ist der maschinenlesbare Vertrag einer REST
 | :--- | :--- | :--- | :--- |
 | **Root-Feld** | `swagger: "2.0"` | `openapi: "3.0.3"` | `openapi: "3.1.0"` |
 | **Server-Basis** | `host`, `basePath`, `schemes` | `servers: [{ url, variables }]` | `servers: [{ url, variables }]` |
-| **Komponenten** | `definitions`, `parameters`, `securityDefinitions` | `components.schemas`, `components.securitySchemes` | `components.schemas`, `components.securitySchemes` |
-| **JSON Schema** | Eingeschränkte Teilmenge (Draft-04-nah) | Draft-05-Superset (`nullable: true`) | **Vollständig JSON Schema Draft 2020-12** (`type: ["string", "null"]`) |
-| **`$ref`-Geschwisterfelder** | Verboten | Ignoriert | Erlaubt (`$ref` neben `description` / `summary`) |
-| **Asynchrone Events** | Nicht vorhanden | `callbacks` (an Operation) | Top-Level **`webhooks`** + `callbacks` |
-| **Mutual TLS** | Nicht vorhanden | Nur prosaisch | Erstklassig über `type: mutualTLS` (ab M06) |
+| **Komponenten** | `definitions`, `securityDefinitions` | `components.schemas`, `components.securitySchemes` | `components.schemas`, `components.securitySchemes` |
+| **Leere / Null-Werte** | Nicht standardisiert | `nullable: true` | **JSON Schema 2020-12:** `type: ["string", "null"]` |
+| **Asynchrone Events** | Nicht vorhanden | `callbacks` | Top-Level **`webhooks`** + `callbacks` |
+| **Mutual TLS** | Nicht vorhanden | Nur Textbeschreibung | Erstklassig über `type: mutualTLS` (ab M06) |
 
-### Warum sortenreines OpenCollection YAML in Bruno?
+### Sortenreines OpenCollection YAML in Bruno
 
-Bruno v3/v4 standardisiert auf **OpenCollection YAML** (`opencollection.yml` im Collection-Root + `.yml`-Dateien für Requests, Ordner und Umgebungen). Gegenüber dem älteren `.bru`-Format bietet YAML natives Syntax-Highlighting in Git-Diffs, JSON-Schema-Validierung und volle Kompatibilität zu CI-Tools. **Wichtig:** `.bru`- und `.yml`-Dateien dürfen innerhalb derselben Collection niemals gemischt werden.
+Bruno speichert jede Anfrage als übersichtliche Textdatei im **OpenCollection-YAML-Format** (`opencollection.yml` im Hauptordner + `.yml`-Dateien für Requests und Umgebungen). **Wichtig:** Das ältere `.bru`-Format und `.yml`-Dateien dürfen innerhalb derselben Collection niemals gemischt werden.
 
-## 3. Geführter Walkthrough (`curl` & `Bruno`)
+## 3. Geführter Walkthrough (`Browser` & `Bruno Desktop`)
 
-### `curl`: OpenAPI-Spezifikation inspizieren
+### Schritt 1: OpenAPI-Spezifikation im Browser ansehen
 
-```bash
-# OpenAPI-Version, Titel und Server-URLs des lokalen Petstore auslesen
-curl -sS http://localhost:8080/api/v3/openapi.json \
-  | jq '{openapi, title: .info.title, version: .info.version, servers}'
+1. Öffne **`http://localhost:8080/api/v3/openapi.json`** im Browser (am besten in Firefox/Chrome mit eingebauter JSON-Ansicht).
+2. Finde die obersten Felder `openapi`, `info.title`, `servers` sowie den Abschnitt `components.schemas.Pet`.
+3. Prüfe dort, welche Felder unter `required` als Pflichtfelder markiert sind (`["name", "photoUrls"]`) und welche Werte `status` annehmen darf (`["available", "pending", "sold"]`).
 
-# Alle vorhandenen Pfade und HTTP-Methoden kompakt auflisten
-curl -sS http://localhost:8080/api/v3/openapi.json \
-  | jq '.paths | to_entries[] | {path: .key, methods: (.value | keys)}'
-```
+### Schritt 2: Import in Bruno Desktop (OpenCollection YAML)
 
-### `Bruno CLI` & `Bruno GUI`: OpenAPI importieren und parametrisieren
+1. Öffne **Bruno Desktop** → klicke oben links auf **`+` → Import Collection → OpenAPI V3 Specification**.
+2. Gib als URL **`http://localhost:8080/api/v3/openapi.json`** ein.
+3. Achte im Import-Dialog darauf, dass als File Format **OpenCollection (YAML)** ausgewählt ist.
+4. Öffne alternativ direkt die vorbereitete Kurs-Collection **`collections/bruno/petstore-lab/`** (*Open Collection*).
 
-1. **Per Bruno CLI (OpenCollection YAML erzwingen):**
-   ```bash
-   bru import openapi \
-     --source http://localhost:8080/api/v3/openapi.json \
-     --output /tmp/petstore-imported \
-     --collection-name "Petstore Imported" \
-     --collection-format=opencollection
-   ```
-2. **Per Bruno GUI:** *Collections → `+` → Import Collection → OpenAPI V3 Specification* → URL `http://localhost:8080/api/v3/openapi.json` → Format **OpenCollection (YAML)** wählen.
-3. **Vorkonfigurierte Kurs-Collection öffnen:** Öffne in Bruno den Ordner `collections/bruno/petstore-lab/`.
-4. **Umgebung `local` prüfen (`environments/local.yml`):**
-   ```yaml
-   name: local
-   variables:
-     - name: baseURL
-       value: http://localhost:8080/api/v3
-   ```
-5. **CLI-Lauf prüfen:**
-   ```bash
-   cd collections/bruno/petstore-lab
-   bru run -r --env local
-   ```
+### Schritt 3: Umgebung `local` (`{{baseURL}}`) aktivieren
+
+1. Klicke in Bruno oben rechts auf das Environment-Dropdown (*No Environment*) und wähle **`local`**.
+2. Klicke auf *Configure*, um zu sehen, wie `baseURL` (`http://localhost:8080/api/v3`) zentral definiert ist — jeder Request nutzt `{{baseURL}}/pet` statt einer festen Serveradresse.
+3. Führe alle 4 Requests unter `pets/` der Reihe nach über **Send** aus (`01-create-pet`, `02-find-by-status`, `03-get-pet-by-id`, `04-delete-pet`).
+
+> **Für Fortgeschrittene (CLI-Import & CI):** Wie man OpenAPI-Specs per Kommandozeile mit `bru import openapi` importiert und ausführt, zeigt der [Advanced-Track](../../advanced/A06-token-lifecycle-bruno-cli-cicd.md).
 
 ## 4. Typische Fallstricke und Troubleshooting
 
 | Fehlerbild | Ursache | Diagnose & Lösung |
 | :--- | :--- | :--- |
-| Bruno erkennt importierte Collection nicht | `opencollection.yml` fehlt oder enthält kein `opencollection: 1.0.0` | Erste Zeile von `opencollection.yml` prüfen; `info.name` statt Root-`name` verwenden |
-| Requests verschwinden im Bruno GUI | Mischung von `.bru`- und `.yml`-Dateien im selben Collection-Ordner | `find . -name "*.bru"` prüfen und Collection sortenrein als YAML führen |
-| `bru run` überspringt Requests in Unterordnern | Aufruf von `bru run` ohne `-r` (recursive) | Immer `bru run -r --env local` im Collection-Root ausführen |
-| Request schlägt gegen `{{baseURL}}` fehl | Keine aktive Umgebung ausgewählt (Standard `No environment`) | Im Bruno GUI oben rechts `local` wählen oder per CLI `--env local` übergeben |
+| Bruno erkennt einen Collection-Ordner nicht | `opencollection.yml` fehlt oder enthält kein `opencollection: 1.0.0` | Prüfe, ob `opencollection.yml` im Wurzelordner liegt |
+| Requests verschwinden nach Bearbeitung im GUI | Mischung von `.bru`- und `.yml`-Dateien im selben Ordner | Nur sortenreines OpenCollection YAML (`.yml`) verwenden |
+| Request schlägt fehl mit `Invalid URL {{baseURL}}/pet` | Oben rechts ist noch *No Environment* ausgewählt | Im Environment-Dropdown explizit **`local`** auswählen |
 
 ## 5. Spickzettel (Cheat Sheet)
 
-| Element / Befehl | Bedeutung |
+| Begriff / Syntax | Bedeutung |
 | :--- | :--- |
-| `bru import openapi -s <url> -o <dir> --collection-format=opencollection` | Importiert OpenAPI-Spec direkt als OpenCollection YAML |
+| `http://localhost:8080/api/v3/openapi.json` | Maschinenlesbarer OpenAPI-3.0-Vertrag des Petstore |
 | `opencollection: 1.0.0` | Pflicht-Header in `opencollection.yml` |
-| `{{baseURL}}/pet/:petId` | Kombination aus Environment-Variable und Bruno-Path-Parameter |
-| `type: ["string", "null"]` | OpenAPI 3.1 / JSON Schema 2020-12 Schreibweise für `nullable` |
-| `bru run -r --env local` | Rekursive CLI-Ausführung einer Collection mit Umgebung `local` |
+| `{{baseURL}}/pet/:petId` | Kombination aus Umgebungs- und Pfad-Variable in Bruno |
+| `type: ["string", "null"]` | OpenAPI-3.1-Schreibweise für optionale `null`-Werte |
 
 ## 6. Querverweise
 

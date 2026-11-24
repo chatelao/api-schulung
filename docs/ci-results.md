@@ -1,19 +1,19 @@
 # CI/CD Verifikationsergebnisse
 
-Diese Seite dokumentiert den automatisierten Prüflauf des Workflows **Verify API-Schulung Labs**.
+Diese Seite dokumentiert den automatisierten Prüflauf des Workflows **Verify API-Schulung Labs & Publish Docs**.
 
-- **Zeitstempel:** `2026-11-24 20:13:12 UTC`
+- **Zeitstempel:** `2026-11-24 20:36:09 UTC`
 - **Commit / Referenz:** `main`
 - **GitHub Actions Run:** [local](https://github.com/chatelao/api-schulung/actions)
-- **GitHub Pages:** [https://chatelao.github.io/api-schulung/](https://chatelao.github.io/api-schulung/)
-- **Read the Docs:** [https://api-schulung.readthedocs.io/](https://api-schulung.readthedocs.io/)
+- **Read the Docs (Lehrgang):** [https://api-schulung.readthedocs.io/](https://api-schulung.readthedocs.io/)
+- **GitHub Pages (Interaktives Lernstudio):** [https://chatelao.github.io/api-schulung/](https://chatelao.github.io/api-schulung/)
 
 ## Testergebnisse
 
 | Bereich | Verifikation | Status |
 | :--- | :--- | :---: |
 | Labor-Stack (`smoke-test.sh`) | Petstore3, go-httpbin, tls-proxy (TLS/mTLS), soap-service, Keycloak 26.8.2, mock-oauth2 | **PASS** |
-| `curl`-Skripte (`m01`–`m12`) | 8 ausführbare Skripte (CRUD, SOAP, Auth-Hygiene, mTLS, PKCE, M2M, OIDC, Introspect/Revoke) | **PASS** |
+| Advanced `curl`-Skripte (`m01`–`m12`) | 8 ausführbare Skripte (CRUD, SOAP, Auth-Hygiene, mTLS, PKCE, M2M, OIDC, Introspect/Revoke) | **PASS** |
 | Bruno Collections (`bru run`) | `petstore-lab`, `auth-hygiene-lab`, `oauth-client-credentials-lab`, `security-audit-suite`, `capstone-hybrid-order` | **PASS** |
 | WS-Security XML-Signatur | `CreateSecureOrder` (`Timestamp` + `UsernameToken Digest` + `XML Signature`) | **PASS** |
 
