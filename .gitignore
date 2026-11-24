@@ -43,8 +43,10 @@ global-groovy.log*
 error.log*
 *.bak
 
-# Node.js / Bruno CLI / OS
+# Node.js / Bruno CLI / Python / OS
 node_modules/
+__pycache__/
+*.pyc
 .DS_Store
 Thumbs.db
 *.swp
