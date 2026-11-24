@@ -1,14 +1,17 @@
-# Musterlösung M02: Swagger / OpenAPI & Bruno Desktop
+# Musterlösung M02: Öffentliche OpenAPI-Verträge & Bruno Desktop
 
-## Lösung Aufgabe A: OpenAPI-Anatomie (`http://localhost:8080/api/v3/openapi.json`)
-- **Schemas:** `Order`, `Customer`, `Address`, `Category`, `User`, `Tag`, `Pet`, `ApiResponse`
-- **Pflichtfelder in `Pet` (`required`):** `["name", "photoUrls"]`
-- **Erlaubte Statuswerte (`status.enum`):** `["available", "pending", "sold"]`
+## Lösung Aufgabe A: OpenAPI 3.0 vs. Swagger 2.0
+- **`https://petstore3.swagger.io/api/v3/openapi.json` (OpenAPI 3.0.x):**
+  - **Schemas:** `Order`, `Customer`, `Address`, `Category`, `User`, `Tag`, `Pet`, `ApiResponse`
+  - **Pflichtfelder in `Pet` (`required`):** `["name", "photoUrls"]`
+  - **Erlaubte Statuswerte (`status.enum`):** `["available", "pending", "sold"]`
+- **`https://httpbin.org/spec.json` (Swagger 2.0):**
+  - Nutzt `"swagger": "2.0"`, `"host": "httpbin.org"`, `"basePath": "/"` statt `servers: [...]`.
 
-## Lösung Aufgabe B & C: Bruno Desktop OpenCollection YAML
+## Lösung Aufgabe B & C: Bruno Desktop OpenCollection YAML (`public`)
 - Im Root-Ordner liegt `opencollection.yml` mit der Kopfzeile `opencollection: 1.0.0`.
-- In `environments/local.yml` steht `baseURL: http://localhost:8080/api/v3`.
-- Alle vier Requests unter `collections/bruno/petstore-lab/pets/` nutzen `{{baseURL}}` und liefern bei gewähltem Environment `local` `200 OK`.
+- In `environments/public.yml` steht `baseURL: https://petstore3.swagger.io/api/v3`.
+- Alle vier Requests unter `collections/bruno/petstore-lab/pets/` nutzen `{{baseURL}}` und liefern bei gewähltem Environment `public` `200 OK`.
 
 ## Lösung Bonus-Challenge D: OpenAPI 3.1 Snippet
 

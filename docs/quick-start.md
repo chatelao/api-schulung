@@ -1,67 +1,30 @@
-# QUICK-START.md — 15-Minuten-Installation & Smoke-Test
+# QUICK-START.md — Sofort-Start (0 Minuten Installation) bis Advanced-Labor
 
-Diese Anleitung bringt deine lokale Laborumgebung in unter 15 Minuten zum Laufen.
+Wähle je nach Kenntnisstand und Modul deinen passenden Einstieg — von **sofort im Browser** bis zum **vollständigen Docker-Labor im Advanced-Teil**.
 
-## 1. Voraussetzungen prüfen
+## Option 1: Sofort-Start im Webbrowser (0 Minuten Installation — empfohlen für den Einstieg!)
 
-Für den **Basis-Lehrgang (M00–M12)** genügen **Docker**, ein moderner **Browser**, **Bruno Desktop** und **SoapUI Open Source 5.10.1**. Du musst im Basis-Lehrgang keine eigenen `curl`- oder Shell-Kommandos schreiben — für den Start des Labors reichen vier kopierfertige Zeilen (siehe [00-setup/README.md](setup/m00-setup.md) mit Terminal-Crashkurs).
+Für **M00, M01**, grosse Teile von **M02, M05, M06, M07, M09, M11** sowie das **Interaktive Lernstudio** musst du **nichts installieren** — ein Webbrowser reicht:
 
-Prüfe im Terminal die Docker-Installation:
+1. Öffne **Petstore3 Swagger Web UI**: https://petstore3.swagger.io/
+2. Öffne **HTTPBin Swagger Web UI**: https://httpbin.org/
+3. Öffne das **Interaktive Lernstudio**: https://chatelao.github.io/api-schulung/
+4. Starte direkt mit [Modul 1: HTTP-Fundament über Swagger Web UI](module/M01.md).
 
-```bash
-docker --version
-docker compose version
-```
+## Option 2: Desktop-Clients ohne Docker (ab M02 / M03)
 
-*Optional für den [Advanced-Track (Shell & curl)](advanced/index.md) und CI-Automatisierung:*
+Sobald du eigene API-Sammlungen speichern oder SOAP/WSDL-Verträge testen möchtest, installiere nur zwei Desktop-Programme (weiterhin ohne Terminal und ohne Docker):
 
-```bash
-curl --version
-jq --version
-openssl version
-bru --version       # @usebruno/cli (optional fuer GUI-only, verwendet in A06 & CI)
-```
+- **Bruno Desktop (v3/v4)** — für REST/OpenAPI-Collections (`M02`, `M04`–`M06`, `M09`, `M11`; in `petstore-lab` und `auth-hygiene-lab` gibt es ein fertiges Environment **`public`**!).
+- **SoapUI Open Source 5.10.1** — für WSDL/SOAP-Services (`M03`, z. B. gegen den öffentlichen CountryInfo-WSDL-Dienst).
 
-> **Hinweis zu Bruno:** Installiere für den Basis-Kurs **Bruno Desktop** (v3/v4). Die CLI (`npm install -g @usebruno/cli`) wird erst im Advanced-Kapitel `A06` und in der CI benötigt.
-> **Hinweis zu SoapUI:** Lade **SoapUI Open Source 5.10.1** herunter und prüfe, ob sich die Anwendung starten lässt.
+## Option 3 (Advanced / Security-Vertiefung): Eigenes Docker-Container-Labor
 
-## 2. Repository vorbereiten & `.env` anlegen
+Alle eigenen Server-Container (`petstore3`, `keycloak`, `mock-oauth2`, `go-httpbin`, `tls-proxy` für Custom-CA/mTLS und `soap-service` für XSD-Faults/WS-Security) sind in den **Advanced-Teil** ausgelagert:
 
-```bash
-cp lab/.env.example lab/.env
-```
+- Anleitung: **[Advanced A00: Eigenes Docker-Container-Labor aufsetzen](advanced/A00.md)**
+- Dort findest du auch die 4 Kopier-Befehle für `.env`, Zertifikatsgenerierung (`./lab/certs/generate-certs.sh`), `docker compose up -d` und `./00-setup/smoke-test.sh`.
 
-Passe `lab/.env` bei Bedarf an (Standardwerte sind für den lokalen Laborbetrieb vorkonfiguriert und enthalten ausschliesslich Labor-Platzhalter).
+## Nächster Schritt
 
-## 3. Zertifikate erzeugen & Labor-Container starten
-
-```bash
-# 1. Lokale Root-CA, Server-, Client-Zertifikate und Java-Keystores erzeugen (fuer M07/M08/Capstone)
-./lab/certs/generate-certs.sh
-
-# 2. Docker-Compose-Stack im Hintergrund starten
-docker compose -f lab/docker-compose.yml --env-file lab/.env up -d
-```
-
-> **Linux-Hinweis für OAuth/OIDC (M09–M12):** Damit Browser auf dem Host und Container im Docker-Netzwerk denselben Issuer-Hostnamen auflösen, füge einmalig `127.0.0.1 host.docker.internal` in `/etc/hosts` ein (unter macOS/Windows mit Docker Desktop bereits automatisch vorhanden).
-
-## 4. Smoke-Test ausführen
-
-Warte ca. 20–30 Sekunden (bis Keycloak gestartet ist) und starte dann das Verifikationsskript:
-
-```bash
-./00-setup/smoke-test.sh
-```
-
-Erwartete Ausgabe:
-- Petstore3 (`http://localhost:8080/api/v3/openapi.json`): `200 OK`
-- go-httpbin HTTP (`http://localhost:8180/status/200`): `200 OK`
-- tls-proxy Custom-CA HTTPS (`https://localhost:8444/status/200` mit Custom CA): `200 OK`
-- tls-proxy mTLS (`https://localhost:8443/headers` mit Custom CA + Client-Cert): `200 OK`
-- SOAP-Service (`http://localhost:9000/soap?wsdl`): `200 OK`
-- mock-oauth2-server (`http://localhost:8090/isalive`): `200 OK`
-- Keycloak (`http://localhost:8081/realms/api-lab/.well-known/openid-configuration`): `200 OK`
-
-## 5. Nächster Schritt
-
-Lies [00-setup/README.md](setup/m00-setup.md) für Troubleshooting-Details und starte anschliessend mit [Modul 1: HTTP-Fundament & erste API-Requests](module/M01.md).
+Lies [00-setup/README.md](setup/m00-setup.md) oder springe direkt in [Modul 1](module/M01.md).

@@ -1,15 +1,12 @@
 # Musterlösung M03: SOAP 1.1/1.2 & WSDL-Verträge in SoapUI
 
-## Lösung Aufgabe A & B: SoapUI OS 5.10.1
-- Nach Import von `http://localhost:9000/soap?wsdl` zeigt der **Raw-Tab** von `CalculateTax`:
-  - `Content-Type: text/xml;charset=UTF-8`
-  - `SOAPAction: "http://api-schulung.local/orders/v1/CalculateTax"`
-- Ergebnis für `netAmount=200.00`, `countryCode=CH`: `taxRate=0.081`, `taxAmount=16.20`, `grossAmount=216.20`.
-- `CreateOrder` liefert eine dynamische `orderId` (z. B. `ORD-A1B2C3`), die in `GetOrder` denselben Datensatz mit `status=CREATED` zurückgibt.
+## Lösung Aufgabe A & B: Öffentliche WSDL (`CountryInfoService`) in SoapUI OS 5.10.1
+- Nach Import von `http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL`:
+  - **`CapitalCity` (`sCountryISOCode=CH`, SOAP 1.1):** Raw-Tab zeigt `Content-Type: text/xml;charset=UTF-8` und Namespace `http://schemas.xmlsoap.org/soap/envelope/`. Antwort: `<m:CapitalCityResult>Bern</m:CapitalCityResult>`.
+  - **`CountryName` (`sCountryISOCode=DE`, SOAP 1.2):** Raw-Tab zeigt `Content-Type: application/soap+xml;charset=UTF-8` und Namespace `http://www.w3.org/2003/05/soap-envelope`. Antwort: `<m:CountryNameResult>Germany</m:CountryNameResult>`.
 
-## Lösung Aufgabe C & Bonus D: Fault-Diagnose (1.1 vs. 1.2)
-1. **XSD-Typfehler (`quantity="NICHT_GUELTIG"`):** HTTP `500`, `<faultcode>soap:Client</faultcode>`, `<faultstring>XSD-Validierungsfehler: ...</faultstring>`.
-2. **SOAP-1.2-Fault (`application/soap+xml`):** HTTP `500`, `<soap:Code><soap:Value>soap:Sender</soap:Value></soap:Code>`, `<soap:Reason><soap:Text xml:lang="de">Auftrag 'ORD-9999' wurde nicht gefunden.</soap:Text></soap:Reason>`.
-3. **Fehlender `SOAPAction`-Header bei SOAP 1.1:** HTTP `500` mit `<faultstring>SOAP 1.1 erfordert den HTTP-Header SOAPAction.</faultstring>`.
+## Lösung Aufgabe C: XSD-Fault-Diagnose (`OrderService`, optional mit `A00` / Datei-Inspektion)
+1. **XSD-Typfehler (`quantity="NICHT_GUELTIG"` in `invalid-xsd-fault.xml`):** `order.wsdl` verlangt `<xsd:element name="quantity" type="xsd:positiveInteger"/>`. Im lokalen Labor (`A00`) entsteht HTTP `500` mit `<faultcode>soap:Client</faultcode>`.
+2. **SOAP 1.1 vs. 1.2 Payloads:** `create-order-soap11.xml` nutzt `http://schemas.xmlsoap.org/soap/envelope/`, `create-order-soap12.xml` nutzt `http://www.w3.org/2003/05/soap-envelope`.
 
 *(Für die automatisierte `curl --data-binary`-Variante siehe [Advanced A02](../advanced/A02-soap-curl-databinary.md).)*

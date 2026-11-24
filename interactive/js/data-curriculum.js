@@ -1,14 +1,14 @@
 window.API_CURRICULUM = [
   {
     id: "setup",
-    title: "Einstieg — Labor-Setup ohne Shell-Vorkenntnisse",
-    badge: "Basis",
+    title: "Sofort-Einstieg — 0 Minuten Installation (Swagger Web UI im Browser)",
+    badge: "Zero-Install",
     lessons: [
       {
         id: "M00",
-        title: "M00: Labor-Setup, Terminal-Crashkurs & Browser-Checks",
-        duration: 45,
-        tools: "Docker, Bruno Desktop, SoapUI OS 5.10.1",
+        title: "M00: Zero-Install-Einstieg (Swagger Web UI) & Werkzeug-Überblick",
+        duration: 20,
+        tools: "Webbrowser (petstore3.swagger.io, httpbin.org)",
         docsPath: "setup/m00-setup/",
         exercisePath: null
       }
@@ -16,14 +16,14 @@ window.API_CURRICULUM = [
   },
   {
     id: "stufe1",
-    title: "Stufe 1 — Grundlagen (visuell mit Swagger UI, Bruno Desktop & SoapUI)",
+    title: "Stufe 1 — Grundlagen (Swagger Web UI → Bruno Desktop & SoapUI)",
     badge: "Basis",
     lessons: [
       {
         id: "M01",
-        title: "M01: HTTP-Fundament & erste API-Requests",
+        title: "M01: HTTP-Fundament & erste API-Requests (Swagger Web UI)",
         duration: 90,
-        tools: "Swagger UI, Bruno Desktop",
+        tools: "Swagger Web UI (petstore3.swagger.io, httpbin.org), optional Bruno",
         docsPath: "module/M01/",
         exercisePath: "uebungen/M01/"
       },
@@ -31,7 +31,7 @@ window.API_CURRICULUM = [
         id: "M02",
         title: "M02: Swagger / OpenAPI (2.0, 3.0, 3.1) lesen & mit Bruno nutzen",
         duration: 120,
-        tools: "Bruno Desktop (OpenCollection YAML), Browser",
+        tools: "Swagger UI, Bruno Desktop (public-Env)",
         docsPath: "module/M02/",
         exercisePath: "uebungen/M02/"
       },
@@ -39,7 +39,7 @@ window.API_CURRICULUM = [
         id: "M03",
         title: "M03: SOAP 1.1/1.2 & WSDL-Verträge in SoapUI Open Source",
         duration: 150,
-        tools: "SoapUI OS 5.10.1, Bruno Desktop",
+        tools: "SoapUI OS 5.10.1 (CountryInfo WSDL / optional A00)",
         docsPath: "module/M03/",
         exercisePath: "uebungen/M03/"
       },
@@ -47,7 +47,7 @@ window.API_CURRICULUM = [
         id: "M04",
         title: "M04: Assertions, Request-Chaining, Scripting & Mocking",
         duration: 120,
-        tools: "Bruno Runner, SoapUI OS 5.10.1",
+        tools: "Bruno Desktop (public), SoapUI MockService",
         docsPath: "module/M04/",
         exercisePath: "uebungen/M04/"
       }
@@ -62,7 +62,7 @@ window.API_CURRICULUM = [
         id: "M05",
         title: "M05: Klassische Credentials & Secret-Hygiene",
         duration: 90,
-        tools: "Bruno Desktop (secret: true), SoapUI OS",
+        tools: "HTTPBin Swagger Web UI, Bruno Desktop (secret: true)",
         docsPath: "module/M05/",
         exercisePath: "uebungen/M05/"
       },
@@ -70,7 +70,7 @@ window.API_CURRICULUM = [
         id: "M06",
         title: "M06: OpenAPI securitySchemes & kombinierte Anforderungen",
         duration: 75,
-        tools: "Bruno Desktop, OpenAPI-Editor",
+        tools: "Lernstudio, Swagger UI, Bruno Desktop",
         docsPath: "module/M06/",
         exercisePath: "uebungen/M06/"
       },
@@ -78,7 +78,7 @@ window.API_CURRICULUM = [
         id: "M07",
         title: "M07: TLS, Custom Certificate Authorities & Mutual TLS (mTLS)",
         duration: 105,
-        tools: "Bruno Desktop (GUI), SoapUI OS",
+        tools: "Browser (badssl.com), Bruno Desktop & SoapUI (A00 für mTLS)",
         docsPath: "module/M07/",
         exercisePath: "uebungen/M07/"
       },
@@ -86,7 +86,7 @@ window.API_CURRICULUM = [
         id: "M08",
         title: "M08: SOAP WS-Security (WSS): UsernameToken, Signatur & Enc.",
         duration: 120,
-        tools: "SoapUI OS 5.10.1",
+        tools: "SoapUI OS 5.10.1 + Docker-Labor (A00)",
         docsPath: "module/M08/",
         exercisePath: "uebungen/M08/"
       }
@@ -101,7 +101,7 @@ window.API_CURRICULUM = [
         id: "M09",
         title: "M09: OAuth 2.0 vs. RFC 9700 & OAuth 2.1: Architektur & Anti-Patterns",
         duration: 120,
-        tools: "Browser Debugger, Bruno Desktop",
+        tools: "Browser Debugger, Lernstudio, Bruno",
         docsPath: "module/M09/",
         exercisePath: "uebungen/M09/"
       },
@@ -109,7 +109,7 @@ window.API_CURRICULUM = [
         id: "M10",
         title: "M10: OAuth-Praxis: Authorization Code + PKCE & Client Credentials",
         duration: 135,
-        tools: "Bruno Desktop, SoapUI OS",
+        tools: "Bruno Desktop, SoapUI OS + Docker-Labor (A00)",
         docsPath: "module/M10/",
         exercisePath: "uebungen/M10/"
       },
@@ -117,7 +117,7 @@ window.API_CURRICULUM = [
         id: "M11",
         title: "M11: OpenID Connect (OIDC): Discovery, JWKS, ID Token & /userinfo",
         duration: 120,
-        tools: "Browser, Bruno Desktop, Lernstudio",
+        tools: "Browser (demo.duendesoftware.com), Lernstudio, Bruno",
         docsPath: "module/M11/",
         exercisePath: "uebungen/M11/"
       },
@@ -125,7 +125,7 @@ window.API_CURRICULUM = [
         id: "M12",
         title: "M12: Token-Lebenszyklus, Sicherheits-Audits & Automatisierung",
         duration: 120,
-        tools: "Bruno Collection Runner, GitHub Actions",
+        tools: "Bruno Runner + Docker-Labor (A00), GitHub Actions",
         docsPath: "module/M12/",
         exercisePath: "uebungen/M12/"
       }
@@ -140,7 +140,7 @@ window.API_CURRICULUM = [
         id: "CAP",
         title: "CAP: OIDC + OpenAPI REST + mTLS + SOAP/WSS End-to-End",
         duration: 180,
-        tools: "Bruno Desktop, SoapUI OS",
+        tools: "Bruno Desktop, SoapUI OS + Docker-Labor (A00)",
         docsPath: "capstone/",
         exercisePath: "capstone/rubric/"
       }
@@ -148,9 +148,17 @@ window.API_CURRICULUM = [
   },
   {
     id: "advanced",
-    title: "Advanced-Track — Shell, curl, jq, OpenSSL & CLI-Automatisierung",
+    title: "Advanced-Track — Eigenes Docker-Labor (A00), Shell, curl & CLI",
     badge: "Advanced",
     lessons: [
+      {
+        id: "A00",
+        title: "A00: Eigenes 6-Container-Docker-Labor & Zertifikate aufsetzen",
+        duration: 30,
+        tools: "Docker Compose, generate-certs.sh, smoke-test.sh",
+        docsPath: "advanced/A00/",
+        exercisePath: null
+      },
       {
         id: "A01",
         title: "A01: HTTP-Fundament & curl ohne Magie (jq & Timing)",

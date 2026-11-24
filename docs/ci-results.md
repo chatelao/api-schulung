@@ -2,7 +2,7 @@
 
 Diese Seite dokumentiert den automatisierten Prüflauf des Workflows **Verify API-Schulung Labs & Publish Docs**.
 
-- **Zeitstempel:** `2026-11-24 20:36:09 UTC`
+- **Zeitstempel:** `2026-11-24 20:45:37 UTC`
 - **Commit / Referenz:** `main`
 - **GitHub Actions Run:** [local](https://github.com/chatelao/api-schulung/actions)
 - **Read the Docs (Lehrgang):** [https://api-schulung.readthedocs.io/](https://api-schulung.readthedocs.io/)

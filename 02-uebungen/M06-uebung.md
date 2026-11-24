@@ -3,9 +3,9 @@ module_id: M06
 title: "OpenAPI securitySchemes & kombinierte Sicherheitsanforderungen"
 level: "Stufe 2 - Sicherheit"
 duration_minutes: 75
-tools: ["Bruno (OpenCollection YAML)", "OpenAPI-Editor", "curl"]
+tools: ["Interaktives Lernstudio", "Bruno Desktop (OpenCollection YAML)", "Webbrowser (Swagger UI)"]
 standards: ["OpenAPI 3.1.0", "OpenAPI 3.2 (Ausblick)"]
-lab_services: ["go-httpbin", "tls-proxy"]
+lab_services: ["public (petstore3.swagger.io)", "optional A00: go-httpbin, tls-proxy"]
 prerequisites: ["M02", "M05"]
 ---
 
@@ -13,14 +13,15 @@ prerequisites: ["M02", "M05"]
 
 ## 1. Szenario und Zielzustand
 
-Du prüfst die neue OpenAPI-3.1-Spezifikation eines Partnerportals. Der Vertrag muss vier unterschiedliche Zugriffsregeln eindeutig abbilden und nach einem `bru import openapi` sauber in Bruno nachvollziehbar sein.
+Du prüfst die neue OpenAPI-3.1-Spezifikation eines Partnerportals und vergleichst die Darstellung im **Interaktiven Lernstudio**, in **Swagger Web UI** (`https://petstore3.swagger.io/`) und in **Bruno Desktop**.
 
 ## 2. Aufgabenpakete
 
-### Aufgabe A: Vier Sicherheitsregeln in OpenAPI 3.1 modellieren
-Erstelle eine Kopie von [openapi-security-demo.yaml](../01-module/M06-openapi-security-schemes/openapi-security-demo.yaml) unter `/tmp/partner-openapi.yaml` und ergänze einen fünften Pfad `/anything/oidc-profile`, der:
-1. Das globale `bearerAuth` **nicht** verwendet, sondern `oidcAuth` mit Scope `openid` fordert.
-2. Für eine `PUT`-Operation auf `/anything/admin` zusätzlich `apiKeyAuth` **UND** `mtlsAuth` verlangt.
+### Aufgabe A: Vier Sicherheitsregeln im Lernstudio & in OpenAPI 3.1 modellieren
+1. Teste zuerst alle vier Sicherheitsmodi im [Interaktiven Lernstudio → 2. OpenAPI Security Tester](https://chatelao.github.io/api-schulung/#labs:openapi).
+2. Erstelle eine Kopie von [openapi-security-demo.yaml](../01-module/M06-openapi-security-schemes/openapi-security-demo.yaml) unter dem Namen `partner-openapi.yaml` und ergänze einen fünften Pfad `/anything/oidc-profile`, der:
+   - Das globale `bearerAuth` **nicht** verwendet, sondern `oidcAuth` mit Scope `openid` fordert.
+   - Für eine `PUT`-Operation auf `/anything/admin` zusätzlich `apiKeyAuth` **UND** `mtlsAuth` verlangt.
 
 ### Aufgabe B: Typische Schema-Fehler finden und beheben
 Analysiere das folgende fehlerhafte Snippet und korrigiere alle drei Fehler:
@@ -46,8 +47,9 @@ paths:
       responses: { "200": { description: "OK" } }
 ```
 
-### Aufgabe C: Import nach Bruno & Verifikation
-Importiere deine OpenAPI-3.1-Datei per `bru import openapi --source /tmp/partner-openapi.yaml --output /tmp/partner-bruno --collection-format=opencollection` und prüfe per YAML-Inspektion, welche Auth-Blöcke Bruno erzeugt hat.
+### Aufgabe C: GUI-Import in Bruno Desktop & Swagger-UI-Vergleich
+1. Importiere deine `partner-openapi.yaml` in **Bruno Desktop** (*`+` → Import Collection → OpenAPI V3 Specification*) und prüfe im Auth-Tab der erzeugten Requests, welche Authentifizierungsarten Bruno übernommen hat.
+2. Öffne **`https://petstore3.swagger.io/`** und klicke auf **Authorize**, um dieselben `securitySchemes` in einer echten Swagger Web UI zu betrachten.
 
 ### Bonus-Challenge D: OpenAPI 3.2 Device-Flow-Ausblick
 Recherchiere bzw. skizziere das Schema für `oauth2MetadataUrl` und `flows.deviceAuthorization` in OpenAPI 3.2 (inkl. `deviceAuthorizationUrl`, `tokenUrl` und `scopes`).

@@ -35,11 +35,18 @@ In Firmennetzen gibt es oft **zwei Besonderheiten**:
 | **Client-Zertifikat (mTLS)** | *Collection Settings → Client Certificates* (Domain `localhost`, `client.crt` + `client.key` oder `client.pfx`) | *File → Preferences → SSL Settings → KeyStore* (`client-keystore.jks`) |
 | **Vorrang-Regel** | Aktivierte Collection-Zertifikate haben bei gleicher Domain Vorrang vor globalen Zertifikaten | Projekt-/Global-SSL-Einstellungen |
 
-## 3. Geführter Walkthrough (`Bruno Desktop` & `SoapUI`)
+## 3. Geführter Walkthrough (`Browser via badssl.com`, `Bruno Desktop` & `SoapUI`)
 
-*(Voraussetzung aus [M00](../../00-setup/README.md): Die Zertifikate unter `lab/certs/out/` wurden beim Setup erzeugt.)*
+### Schritt 1: TLS-Fehlerbilder direkt im Browser erkunden (0 Minuten Installation!)
 
-### `Bruno Desktop`: Custom CA (`8444`) & mTLS (`8443`)
+Öffne **https://badssl.com/** im Browser und klicke drei rote Kacheln an:
+- **`expired.badssl.com`:** Abgelaufenes Zertifikat (Gültigkeitsdatum überschritten).
+- **`wrong.host.badssl.com`:** Der Servername im Zertifikat (*SAN*) passt nicht zur aufgerufenen Adresse.
+- **`self-signed.badssl.com`:** Selbstsignierter Aussteller, den dein Browser nicht in seiner Vertrauensliste kennt.
+
+### Schritt 2: `Bruno Desktop` — Custom CA (`8444`) & mTLS (`8443`) mit dem Container-Labor (`A00`)
+
+*(Voraussetzung für diesen vertiefenden Hands-on-Teil: Starte einmalig das eigene Container-Labor + Zertifikate aus [Advanced A00: Eigenes Docker-Labor](../../advanced/A00-lokales-labor-docker.md).)*
 
 1. Öffne [collections/bruno/auth-hygiene-lab/](../../collections/bruno/auth-hygiene-lab/opencollection.yml) und wähle Environment **`local`**.
 2. **Negativtest zuerst:** Sende im Ordner `TLS & mTLS` den Request `01-custom-ca-tls` (`https://localhost:8444/headers`) — es erscheint ein Zertifikatsfehler, weil Bruno unsere Labor-CA noch nicht kennt.
@@ -65,7 +72,7 @@ In Firmennetzen gibt es oft **zwei Besonderheiten**:
 | :--- | :--- | :--- |
 | Zertifikatsfehler trotz `--ignore`? | SSL-Verifikation abzuschalten verdeckt echte Sicherheitsprobleme | Immer `ca.crt` unter *Preferences → General* hinterlegen (niemals SSL-Prüfung global abschalten!) |
 | Port `8443` liefert `400 No required SSL certificate was sent` | Client-Zertifikat fehlt oder Domain-Eintrag passt nicht | In *Collection Settings → Client Certificates* exakt `localhost` und aktivierte Checkbox prüfen |
-| `lab/certs/out/` existiert nicht | Zertifikats-Setup aus M00 fehlt | Einmalig `./lab/certs/generate-certs.sh` gemäss [M00](../../00-setup/README.md) ausführen |
+| `lab/certs/out/` existiert nicht | Zertifikats-Setup wurde noch nicht ausgeführt | `./lab/certs/generate-certs.sh` und Container gemäss [Advanced A00](../../advanced/A00-lokales-labor-docker.md) starten |
 
 ## 5. Spickzettel (Cheat Sheet)
 

@@ -1,0 +1,15 @@
+name: public
+variables:
+  - name: httpbinURL
+    value: https://httpbin.org
+  - name: basicUser
+    value: labuser
+  - name: basicPass
+    value: ""
+    secret: true
+  - name: apiKey
+    value: ""
+    secret: true
+  - name: bearerToken
+    value: ""
+    secret: true

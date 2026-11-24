@@ -43,19 +43,19 @@ Wenn eine API Antwortdaten liefert (z. B. eine neu vergebene Bestellnummer `ORD-
 
 ### `Bruno Desktop` (Chaining + Assert-Tab + Collection Runner)
 
-1. Öffne [collections/bruno/petstore-lab](../../collections/bruno/petstore-lab/opencollection.yml) in Bruno Desktop und wähle Environment **`local`**.
+1. Öffne [collections/bruno/petstore-lab](../../collections/bruno/petstore-lab/opencollection.yml) in Bruno Desktop und wähle Environment **`public`** (ohne Docker gegen `petstore3.swagger.io`) oder **`local`** (mit eigenem Container aus [A00](../../advanced/A00-lokales-labor-docker.md)).
 2. Sieh dir in `01-create-pet` die Tabs **Assert** (`res.status eq 200`), **Script → Post Response** (`bru.setVar("petId", String(res.body.id));`) und **Tests** an.
 3. Klicke auf das **Runner-Symbol** (Collection/Folder *Run*) auf dem Ordner `pets` und starte alle 4 Requests hintereinander: `03-get-pet-by-id` verwendet automatisch `{{petId}}` aus Schritt 1!
 
-### `SoapUI Open Source 5.10.1` (`Property Transfer` + `XPath Match` + `MockService`)
+### `SoapUI Open Source 5.10.1` (`Property Transfer` + `XPath Match` + `MockService` ohne Docker)
 
 1. Öffne [order-service-soapui-project.xml](../../collections/soapui/order-service-soapui-project.xml) in SoapUI OS 5.10.1.
-2. Klappe `OrderServiceTestSuite → OrderChainingTestCase` auf:
+2. Starte zuerst den eingebauten **`OrderServiceMock`** im Projektbaum über den grünen Play-Button (Port `8088`) — damit laufen SoapUI-Tests komplett **ohne Docker-Container**! (Falls du das eigene Container-Labor aus [A00](../../advanced/A00-lokales-labor-docker.md) gestartet hast, läuft der echte Server unter Port `9000`.)
+3. Klappe `OrderServiceTestSuite → OrderChainingTestCase` auf:
    - **Step 1 (`CreateOrder`)**: Legt Auftrag an und prüft mit **XPath Match** (`//tns:CreateOrderResponse/tns:status = CREATED`).
    - **Step 2 (`TransferOrderId`)**: *Property Transfer* kopiert die erzeugte `orderId` automatisch aus der Response in den nächsten Request.
    - **Step 3 (`GetOrder`)**: Ruft den Auftrag ab und prüft per **XPath Match** auf `CUST-CHAIN-01`.
-3. Klicke im `OrderChainingTestCase` auf den grünen Play-Button, sodass alle 3 Steps automatisch grün durchlaufen.
-4. Öffne **`OrderServiceMock`** im Projektbaum und starte ihn über den grünen Play-Button (Port `8088`), um Antworten unabhängig vom Docker-Container zu simulieren.
+4. Klicke im `OrderChainingTestCase` auf den grünen Play-Button, sodass alle 3 Steps automatisch grün durchlaufen.
 
 > **Für Fortgeschrittene (CI-Ausführung per CLI):** Wie du diese Collections automatisiert über `bru run` auf der Shell startest, erklärt [Advanced A06](../../advanced/A06-token-lifecycle-bruno-cli-cicd.md).
 

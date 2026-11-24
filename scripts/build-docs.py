@@ -34,6 +34,7 @@ MODULE_MAP = {
 
 ADVANCED_MAP = {
     "advanced/README.md": "advanced/index.md",
+    "advanced/A00-lokales-labor-docker.md": "advanced/A00.md",
     "advanced/A01-http-curl-jq.md": "advanced/A01.md",
     "advanced/A02-soap-curl-databinary.md": "advanced/A02.md",
     "advanced/A03-secret-hygiene-curl.md": "advanced/A03.md",

@@ -231,11 +231,11 @@
     if (state.variant === "B") {
       banner.className = "callout callout-warn";
       banner.innerHTML =
-        "<strong>Modus B (Fallback ohne lokales Docker):</strong> Für erste HTTP-/OpenAPI-Tests kannst du öffentliche Sandboxes wie <code>https://petstore3.swagger.io</code> und <code>https://httpbin.org</code> in Bruno Desktop nutzen. Für Keycloak-OAuth 2.1, mTLS und WS-Security wird weiterhin das lokale Docker-Labor empfohlen.";
+        "<strong>Modus B (Advanced A00 — Eigenes Docker-Labor):</strong> Alle 6 Container laufen lokal unter <code>localhost:8080</code> (Petstore), <code>8081</code> (Keycloak), <code>8090</code> (mock-oauth2), <code>8180</code> (httpbin), <code>8443/8444</code> (mTLS/TLS) und <code>9000</code> (SOAP/WSS) — ideal für Offline-Tests, mTLS, WS-Security und die <code>curl</code>-Übungen <code>A01–A06</code>.";
     } else {
       banner.className = "callout callout-info";
       banner.innerHTML =
-        "<strong>Modus A (Lokales Docker-Labor empfohlen):</strong> Alle Dienste laufen reproduzierbar unter <code>localhost:8080</code> (Petstore), <code>8081</code> (Keycloak), <code>8090</code> (mock-oauth2), <code>8180</code> (httpbin), <code>8443/8444</code> (mTLS/TLS) und <code>9000</code> (SOAP/WSS). Der Basis-Track nutzt ausschliesslich GUI-Werkzeuge (Bruno Desktop, SoapUI OS, Browser).";
+        "<strong>Modus A (Zero-Install-Einstieg empfohlen):</strong> Starte ohne Docker &amp; ohne Terminal direkt in öffentlichen <strong>Swagger Web UIs</strong> (<a href='https://petstore3.swagger.io/' target='_blank' rel='noopener'>petstore3.swagger.io</a>, <a href='https://httpbin.org/' target='_blank' rel='noopener'>httpbin.org</a>) sowie <a href='https://badssl.com/' target='_blank' rel='noopener'>badssl.com</a> und <a href='https://demo.duendesoftware.com/.well-known/openid-configuration' target='_blank' rel='noopener'>Duende OIDC</a>.";
     }
   }
 
@@ -551,6 +551,15 @@
         ? ` -H "Content-Type: ${ct}" -d '{"id":2026,"name":"LabDog","status":"available"}'`
         : "";
 
+    const isLocal = parsed.hostname === "localhost";
+    const schemeNote =
+      parsed.protocol === "https:"
+        ? "TLS-verschlüsselt (Produktionsstandard)"
+        : "Unverschlüsselt im lokalen Docker-Container-Labor (A00)";
+    const hostNote = isLocal
+      ? "Lokaler Docker-Container (Advanced A00)"
+      : "Öffentlicher Testserver mit eingebauter Swagger Web UI";
+
     out.innerHTML = `
       <div class="callout ${badgeClass}">
         <strong>Erwarteter Status:</strong> <code>${escapeHtml(status)}</code><br />
@@ -559,12 +568,12 @@
       <table class="data-table">
         <thead><tr><th>URL-Bestandteil</th><th>Wert</th><th>Bedeutung</th></tr></thead>
         <tbody>
-          <tr><td>Protokoll (Scheme)</td><td><code>${escapeHtml(parsed.protocol.replace(":", ""))}</code></td><td>Unverschlüsselt im lokalen Lab (in Produktion <code>https</code>)</td></tr>
-          <tr><td>Host &amp; Port</td><td><code>${escapeHtml(parsed.host)}</code></td><td>Ziel-Container im lokalen Docker-Labor</td></tr>
+          <tr><td>Protokoll (Scheme)</td><td><code>${escapeHtml(parsed.protocol.replace(":", ""))}</code></td><td>${escapeHtml(schemeNote)}</td></tr>
+          <tr><td>Host &amp; Port</td><td><code>${escapeHtml(parsed.host)}</code></td><td>${escapeHtml(hostNote)}</td></tr>
           <tr><td>Pfad (Path)</td><td><code>${escapeHtml(parsed.pathname)}</code></td><td>Adressierte API-Ressource</td></tr>
         </tbody>
       </table>
-      <p class="muted-sm" style="margin-top:0.75rem;">GUI-Tipp (Bruno Desktop): Methode <strong>${escapeHtml(method)}</strong> wählen, URL einfügen${method === "POST" || method === "PUT" ? ` und Body-Typ <strong>${escapeHtml(ct)}</strong> setzen` : ""}.<br />Optional für Advanced (<code>curl</code>):</p>
+      <p class="muted-sm" style="margin-top:0.75rem;">Sofort-Start (Browser Swagger UI): Öffne <code>${escapeHtml(parsed.origin)}/</code> und klicke auf <strong>Try it out</strong> (Methode <strong>${escapeHtml(method)}</strong>). Alternativ in Bruno Desktop${method === "POST" || method === "PUT" ? ` mit Body-Typ <strong>${escapeHtml(ct)}</strong>` : ""}.<br />Optional für Advanced (<code>curl</code>):</p>
       <pre><code>curl -i -X ${escapeHtml(method)} "${escapeHtml(urlStr)}"${escapeHtml(bodySnippet)}</code></pre>
     `;
   }

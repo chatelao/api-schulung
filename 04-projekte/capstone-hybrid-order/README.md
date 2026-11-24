@@ -1,8 +1,8 @@
 # Abschlussprojekt (Capstone): Hybride Enterprise-Auftragsintegration
 
 - **Dauer:** 180 Minuten (3,0 Stunden)
-- **Werkzeuge:** `curl`, **Bruno (OpenCollection YAML + `bru`)**, **SoapUI Open Source 5.10.1**, `jq`, `openssl`
-- **Voraussetzungen:** Module `M00`–`M12` sowie laufendes Docker-Labor (`./00-setup/smoke-test.sh`)
+- **Werkzeuge:** **Bruno Desktop (OpenCollection YAML)**, **SoapUI Open Source 5.10.1** (optional für Advanced-CLI: `curl`, `bru`, `jq`, `openssl`)
+- **Voraussetzungen:** Module `M00`–`M12` sowie laufendes eigenes Container-Labor ([Advanced A00](../../advanced/A00-lokales-labor-docker.md))
 
 ## 1. Szenario
 

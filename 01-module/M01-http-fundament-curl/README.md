@@ -1,41 +1,42 @@
 ---
 module_id: M01
-title: "HTTP-Fundament & erste API-Requests ohne Shell-Vorkenntnisse"
+title: "HTTP-Fundament & erste API-Requests (Zero-Install in Swagger Web UI)"
 level: "Stufe 1 - Grundlagen"
 duration_minutes: 90
-tools: ["Webbrowser (Swagger UI)", "Bruno Desktop (GUI)"]
+tools: ["Webbrowser (Swagger Web UI)", "Bruno Desktop (optional)"]
 standards: ["RFC 9110 (HTTP Semantics)", "HTTP/1.1 & HTTP/2", "JSON"]
-lab_services: ["petstore3", "go-httpbin"]
+lab_services: ["public (petstore3.swagger.io, httpbin.org)", "optional A00: petstore3, go-httpbin"]
 prerequisites: ["M00"]
 ---
 
-# Modul 1: HTTP-Fundament & erste API-Requests (visuell mit Swagger UI & Bruno)
+# Modul 1: HTTP-Fundament & erste API-Requests (direkt in Swagger Web UI)
 
 ## 1. Lernziele
 
 Nach Abschluss dieses Moduls kannst du:
-1. Den Aufbau einer **URL** (`Protokoll://Server:Port/Pfad?Abfrage`) und den Austausch zwischen **Client** und **Server** anschaulich **erklären**.
-2. Eine HTTP-Nachricht (**Methode**, **Header**, **Body**, **Statuscode**) in einer grafischen Oberfläche sicher **lesen**.
+1. Den Aufbau einer **URL** (`Protokoll://Server/Pfad?Abfrage`) und den Austausch zwischen **Client** und **Server** anschaulich **erklären**.
+2. Eine HTTP-Nachricht (**Methode**, **Header**, **Body**, **Statuscode**) direkt in einer **Swagger Web UI** im Browser sicher **lesen**.
 3. Idempotente Operationen (`GET`, `PUT`, `DELETE`) von nicht-idempotenten Operationen (`POST`, `PATCH`) **unterscheiden**.
-4. Erste CRUD-Requests (*Create, Read, Update, Delete*) und gezielte Fehlercodes (`400`, `404`, `405`, `415`) in **Swagger UI** und **Bruno Desktop** selbstständig **ausführen**.
+4. Erste CRUD-Requests (*Create, Read, Update, Delete*) sowie typische Fehlercodes (`404`, `405`, `415`) **ohne jede Installation** direkt über öffentliche Swagger-Web-UIs **ausführen**.
 
 ## 2. Architektur und Kernkonzepte (ohne Netzwerk-Vorwissen)
 
 Stell dir eine **API** (*Application Programming Interface*) wie ein Restaurant vor:
-- **Du (der Browser, Bruno oder eine App)** bist der **Client** (Gast).
-- **Das Backend-System (`petstore3`)** ist der **Server** (die Küche).
+- **Du (dein Webbrowser oder später Bruno)** bist der **Client** (Gast).
+- **Der API-Dienst (z. B. `petstore3.swagger.io` oder `httpbin.org`)** ist der **Server** (die Küche).
 - **HTTP** ist die gemeinsame Bestellsprache zwischen euch beiden — jeder Austausch besteht aus einer **Anfrage (Request)** und einer **Antwort (Response)**.
 
 ### Anatomie einer Web-Adresse (URL)
 
 ```text
-http://localhost:8080/api/v3/pet/findByStatus?status=available
-\__/   \_______/ \__/\______________________/ \______________/
- |         |      |            |                     |
-Protokoll Host   Port     Pfad (Ressource)    Query-Parameter
+https://petstore3.swagger.io/api/v3/pet/findByStatus?status=available
+\___/   \__________________/\______________________/ \______________/
+  |              |                     |                     |
+Protokoll      Host             Pfad (Ressource)      Query-Parameter
 ```
 
-- **Host & Port:** `localhost` bedeutet *«dieser eigene Computer»*. Da auf einem Rechner mehrere Programme gleichzeitig laufen, bekommt jedes Programm eine eigene Türnummer (**Port**): Petstore nutzt `:8080`, unser Echo-Testserver `:8180`.
+- **Protokoll (`https://`):** Verschlüsselte Verbindung im Web (im lokalen Container-Labor aus `A00` auch unverschlüsselt als `http://localhost:8080`).
+- **Host (`petstore3.swagger.io`):** Name des Computers im Internet, auf dem der Dienst läuft.
 - **Header (Briefumschlag):** Metadaten wie `Content-Type: application/json` (*«Mein Paket enthält JSON-Text»*) oder `Accept: application/json` (*«Bitte antworte mir ebenfalls in JSON»*).
 - **Body (Paketinhalt):** Die eigentlichen Nutzdaten (z. B. ein neues Haustier im JSON-Format).
 
@@ -54,43 +55,52 @@ Protokoll Host   Port     Pfad (Ressource)    Query-Parameter
 - **`4xx` (Gelb — Fehler auf Client-Seite):** `400 Bad Request` (ungültige Daten), `401`/`403` (fehlende Anmeldung/Berechtigung), `404 Not Found` (ID existiert nicht), `405 Method Not Allowed`, `415 Unsupported Media Type` (`Content-Type` passt nicht)
 - **`5xx` (Rot — Fehler auf Server-Seite):** `500 Internal Server Error`
 
-## 3. Geführter Walkthrough (Swagger UI & Bruno Desktop)
+## 3. Geführter Walkthrough (Zero-Install: direkt in Swagger Web UI!)
 
-### Schritt 1: Erste Requests direkt im Browser (Swagger UI)
+Der niedrigschwelligste Einstieg braucht **keinen eigenen Server und keinen installierten API-Client** — die Testoberfläche ist direkt in die öffentlichen Webseiten eingebaut:
 
-1. Öffne im Browser **`http://localhost:8080`**. Du siehst die interaktive **Swagger UI** des Petstore.
-2. Klappe unter **pet** den grünen Balken **`GET /pet/findByStatus`** auf, klicke auf **Try it out**, wähle `status = available` und klicke **Execute**.
-3. Sieh dir unter **Server response** den Statuscode **`200`** und die JSON-Liste der Tiere an.
-4. Klappe **`POST /pet`** auf, klicke **Try it out**, ändere `"id": 1001` und `"name": "Bello"` und klicke **Execute**.
-5. Prüfe unter **`GET /pet/{petId}`** mit `1001`, dass `"Bello"` gespeichert wurde, und lösche ihn anschliessend über **`DELETE /pet/{petId}`**.
+### Schritt 1: Petstore3 Swagger Web UI im Browser (`https://petstore3.swagger.io/`)
 
-### Schritt 2: Header & Fehlercodes in Bruno Desktop sichtbar machen
+1. Öffne im Webbrowser **https://petstore3.swagger.io/**.
+2. Klappe unter **pet** den grünen Balken **`GET /pet/findByStatus`** auf, klicke rechts auf **Try it out**, wähle `status = available` und klicke **Execute**.
+3. Sieh dir unter **Responses → Server response** drei Dinge an:
+   - **Request URL** (welche Adresse genau aufgerufen wurde),
+   - **Code** (`200`),
+   - **Response body** (die JSON-Liste der Tiere) und **Response headers**.
+4. Klappe **`POST /pet`** auf → **Try it out** → wähle eine eigene ID (z. B. `"id": 202611`) und `"name": "Bello"` → **Execute** (`200`).
+5. Rufe dein Tier über **`GET /pet/{petId}`** ab und lösche es danach mit **`DELETE /pet/{petId}`**.
 
-1. Öffne **Bruno Desktop** und lege eine temporäre Anfrage (*New Request*) an `http://localhost:8180/headers` (`GET`) an → Klicke **Send**.
-2. Im rechten Antwortbereich siehst du im **Response Body**, welche Header dein Client automatisch mitgeschickt hat (`User-Agent`, `Accept` usw.).
-3. Erstelle eine Anfrage `POST http://localhost:8080/api/v3/pet`, wähle im Tab **Body** den Typ **Text** (statt JSON!) und sende `Hallo` → Beobachte Status **`415 Unsupported Media Type`**.
+### Schritt 2: Echo & Statuscodes in HTTPBin Swagger Web UI (`https://httpbin.org/`)
 
-> **Für Fortgeschrittene (Shell & `curl`):** Wer diese Schritte automatisiert im Terminal mit `curl` und `jq` durchführen möchte, findet das passende Aufbaumodul unter [Advanced A01: HTTP-Fundament & curl](../../advanced/A01-http-curl-jq.md).
+1. Öffne im zweiten Browser-Tab **https://httpbin.org/** — auch dieser Testserver bietet direkt eine interaktive **Swagger Web UI**!
+2. Klappe unter **Request inspection** den Punkt **`GET /headers`** auf → **Try it out → Execute**: Im JSON-Body siehst du exakt, welche HTTP-Header dein Browser im Hintergrund mitgeschickt hat.
+3. Klappe unter **Status codes** den Punkt **`GET /status/{codes}`** auf → gib `404` (und danach `415`) ein → **Execute**: Beobachte, wie die Antwort unmittelbar den entsprechenden HTTP-Statuscode liefert.
+
+### Schritt 3 (Optional): Eigene Header & Fehler in Bruno Desktop sichtbar machen
+
+Falls du später eigene Requests ausserhalb einer Swagger UI testen möchtest (z. B. bewusst `text/plain` statt JSON senden für `415`), öffne **Bruno Desktop** und lege einen Request gegen `https://httpbin.org/anything/kurs` an.
+
+> **Für Fortgeschrittene (Eigenes Docker-Labor & `curl`):** Wer komplett offline in eigenen Containern (`http://localhost:8080` / `8180`) oder per Terminal (`curl` + `jq`) arbeiten möchte, findet Setup & Übung unter [Advanced A00](../../advanced/A00-lokales-labor-docker.md) und [Advanced A01](../../advanced/A01-http-curl-jq.md).
 
 ## 4. Typische Fallstricke und Troubleshooting
 
-| Fehlerbild | Ursache | Lösung in Bruno / Swagger UI |
+| Fehlerbild | Ursache | Lösung in Swagger UI / Browser |
 | :--- | :--- | :--- |
-| `415 Unsupported Media Type` | Im Body-Tab wurde *Text* statt *JSON* gewählt (`Content-Type: text/plain`) | Body-Typ in Bruno auf **JSON** umstellen (setzt automatisch `Content-Type: application/json`) |
-| `404 Not Found` beim Abrufen von `1001` | Das Tier wurde vorher noch nicht angelegt oder bereits gelöscht | Zuerst `POST /pet` mit `"id": 1001` ausführen |
-| `Connection refused` im Browser / in Bruno | Der lokale Docker-Container `petstore3` läuft noch nicht | Prüfe die Schritte in [M00: Labor-Setup](../../00-setup/README.md) |
+| `415 Unsupported Media Type` | Request-Content-Type passt nicht (z. B. `text/plain` statt `application/json`) | Im *Parameter / Request body content type*-Dropdown **`application/json`** auswählen |
+| `404 Not Found` beim Abrufen deiner Pet-ID | Öffentlicher Petstore wurde von anderen Teilnehmenden geleert oder ID fehlt noch | Zuerst `POST /pet` mit eigener, zufälliger ID (z. B. 6-stellig) ausführen |
+| Öffentlicher Testserver antwortet kurz mit `502`/`503` oder Timeout | Hohe Auslastung auf der öffentlichen Sandbox (`petstore3.swagger.io` / `httpbin.org`) | Kurz warten, Alternative `https://httpbingo.org/` testen oder bei Bedarf eigenes Docker-Labor aus [A00](../../advanced/A00-lokales-labor-docker.md) starten |
 
 ## 5. Spickzettel (Cheat Sheet)
 
 | Begriff | Kurz-Erklärung |
 | :--- | :--- |
-| **Client / Server** | Fragesteller (Bruno, Browser) / Antwortgeber (API-Dienst) |
-| **Header** | Metadaten zum Request/Response (z. B. `Content-Type`, `Accept`) |
-| **Body** | Der eigentliche JSON- oder XML-Inhalt einer Nachricht |
+| **Swagger Web UI** | Interaktive API-Webseite direkt im Browser (*Try it out*) — 0 Installation |
+| **Client / Server** | Fragesteller (Browser, Bruno) / Antwortgeber (API-Dienst) |
+| **Header / Body** | Briefumschlag (Metadaten) / Paketinhalt (JSON oder XML) |
 | **`200` / `404` / `415`** | Alles OK / Ressource nicht gefunden / Falsches Datenformat |
 
 ## 6. Querverweise
 
 - **Übung:** [M01-uebung.md](../../02-uebungen/M01-uebung.md)
 - **Musterlösung:** [M01-loesung.md](../../03-loesungen/M01-loesung.md)
-- **Advanced (Shell/`curl`):** [A01-http-curl-jq.md](../../advanced/A01-http-curl-jq.md)
+- **Advanced (Docker-Labor & `curl`):** [A00-lokales-labor-docker.md](../../advanced/A00-lokales-labor-docker.md) & [A01-http-curl-jq.md](../../advanced/A01-http-curl-jq.md)

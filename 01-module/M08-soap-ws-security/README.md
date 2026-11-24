@@ -35,6 +35,8 @@ TLS/mTLS schützt die Verbindung immer nur **Punkt-zu-Punkt** bis zum nächsten 
 
 ## 3. Geführter Walkthrough (`SoapUI Open Source 5.10.1`)
 
+*(Voraussetzung: Dieses Modul nutzt unseren lokalen SOAP-/WSS-Container + Keystores aus [Advanced A00: Eigenes Docker-Labor](../../advanced/A00-lokales-labor-docker.md).)*
+
 Der lokale SOAP-Service bietet unter `http://localhost:9000/soap/secure` einen dedizierten WS-Security-Endpunkt (WSDL in [order-service-wss-soapui-project.xml](../../collections/soapui/order-service-wss-soapui-project.xml) vorkonfiguriert).
 
 ### Der verbindliche Sieben-Schritte-Workflow in SoapUI OS

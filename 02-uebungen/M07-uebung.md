@@ -13,14 +13,17 @@ prerequisites: ["M00", "M05", "M06"]
 
 ## 1. Szenario und Zielzustand
 
-Ein internes Zahlungsgateway verwendet eine unternehmenseigene Zertifizierungsstelle (**Custom CA**) und verlangt auf dem sensiblen Endpunkt (`https://localhost:8443`) gegenseitige Authentifizierung (**mTLS**). Du richtest in **Bruno Desktop** (und optional **SoapUI OS 5.10.1**) sowohl das Server-Vertrauen (`ca.crt`) als auch das Client-Zertifikat ein — ohne die Zertifikatsprüfung abzuschalten.
+Ein internes Zahlungsgateway verwendet eine unternehmenseigene Zertifizierungsstelle (**Custom CA**) und verlangt auf dem sensiblen Endpunkt (`https://localhost:8443`) gegenseitige Authentifizierung (**mTLS**). Du lernst TLS-Fehlerbilder zuerst **ohne Installation** über `https://badssl.com/` im Browser kennen und richtest danach in **Bruno Desktop** (und optional **SoapUI OS 5.10.1**) Server-Vertrauen (`ca.crt`) und Client-Zertifikat ein.
+
+*(Voraussetzung für Aufgaben B–C: Eigenes Container-Labor mit Zertifikaten aus [Advanced A00](../advanced/A00-lokales-labor-docker.md).)*
 
 ## 2. Aufgabenpakete
 
-### Aufgabe A: Custom CA Vertrauen in Bruno Desktop (`8444`)
-1. Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) in Bruno Desktop (`local`-Environment aktivieren).
-2. Sende im Ordner `TLS & mTLS` den Request `01-custom-ca-tls` (`https://localhost:8444/headers`) und beobachte den Zertifikatsfehler ohne Custom CA.
-3. Hinterlege `lab/certs/out/ca.crt` unter *Preferences → General → Custom CA Certificate* (Prüfung bleibt aktiv!) und sende den Request erneut → erwartet `200 OK` mit `"X-Tls-Mode": ["server-tls-custom-ca"]`.
+### Aufgabe A: Zero-Install TLS-Fehler im Browser (`https://badssl.com/`) & Custom CA (`8444`)
+1. Öffne **https://badssl.com/** im Browser und rufe `expired.badssl.com`, `wrong.host.badssl.com` und `self-signed.badssl.com` auf, um drei reale Zertifikatsfehler zu unterscheiden.
+2. *(Mit Container-Labor `A00`):* Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) in Bruno Desktop (`local`-Environment aktivieren).
+3. Sende im Ordner `TLS & mTLS` den Request `01-custom-ca-tls` (`https://localhost:8444/headers`) und beobachte den Zertifikatsfehler ohne Custom CA.
+4. Hinterlege `lab/certs/out/ca.crt` unter *Preferences → General → Custom CA Certificate* (Prüfung bleibt aktiv!) und sende den Request erneut → erwartet `200 OK` mit `"X-Tls-Mode": ["server-tls-custom-ca"]`.
 
 ### Aufgabe B: Mutual TLS (`8443`) + Negativtest in Bruno Desktop
 1. Sende `02-mtls-verified` (`https://localhost:8443/headers`) noch **ohne** Client-Zertifikat und dokumentiere die Ablehnung (`400 Bad Request`).

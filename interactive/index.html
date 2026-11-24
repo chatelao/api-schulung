@@ -18,7 +18,7 @@
         <span class="brand-code">API-LAB</span>
         <div>
           <span class="brand-title">API-Schulung Learning Studio</span>
-          <span class="brand-sub">Basis (Bruno &amp; SoapUI, ohne Shell-Ballast) &middot; Advanced (curl)</span>
+          <span class="brand-sub">Sofort-Start (Swagger Web UI) &middot; Basis (Bruno &amp; SoapUI) &middot; Advanced (Docker &amp; curl)</span>
         </div>
       </div>
 
@@ -43,11 +43,11 @@
     <section id="view-curriculum" class="view active" role="tabpanel" aria-labelledby="curriculum-heading">
       <div class="section-head">
         <div>
-          <h1 id="curriculum-heading">Lernplan: Einstieg bis Advanced</h1>
-          <p class="lead">Der Basis-Lehrgang (<code>M00</code>–<code>M12</code> + <code>CAP</code>) kommt ohne Shell- und Netzwerk-Vorkenntnisse aus (Bruno Desktop &amp; SoapUI OS). Der <strong>Advanced-Track</strong> (<code>A01</code>–<code>A06</code>) bündelt alle <code>curl</code>- &amp; CLI-Übungen. Dein Fortschritt wird lokal gespeichert.</p>
+          <h1 id="curriculum-heading">Lernplan: Zero-Install bis Advanced</h1>
+          <p class="lead">Der Einstieg (<code>M00</code>–<code>M01</code>) startet <strong>ohne Installation</strong> direkt in öffentlichen <strong>Swagger Web UIs</strong>. Danach folgen <strong>Bruno Desktop</strong> &amp; <strong>SoapUI OS</strong> (<code>M02</code>–<code>M12</code>). Der <strong>Advanced-Track</strong> (<code>A00</code>–<code>A06</code>) bündelt das eigene Docker-Container-Labor sowie alle <code>curl</code>-Übungen.</p>
         </div>
         <div class="progress-summary" id="lesson-progress-summary">
-          <div class="metric-value"><span id="lessons-done-count">0 / 20</span></div>
+          <div class="metric-value"><span id="lessons-done-count">0 / 21</span></div>
           <div class="metric-label">Module abgeschlossen (<span id="lessons-done-pct">0%</span>)</div>
           <div class="progress-track"><div class="progress-fill" id="lessons-progress-bar"></div></div>
         </div>
@@ -65,8 +65,8 @@
         <div class="filter-group">
           <label for="variant-select">Lab-Modus:</label>
           <select id="variant-select">
-            <option value="A">Lokales Docker-Labor (empfohlen)</option>
-            <option value="B">Öffentliche Fallback-Sandboxes</option>
+            <option value="A">Zero-Install: Öffentliche Swagger Web UIs (empfohlen für Einstieg)</option>
+            <option value="B">Advanced A00: Eigenes Docker-Container-Labor (Offline &amp; Security)</option>
           </select>
         </div>
         <button class="btn btn-secondary" id="export-state-btn" type="button">Lernstand sichern (.json)</button>
@@ -142,12 +142,14 @@
               </select>
             </div>
             <div>
-              <label class="field-label" for="http-target">Ziel-Endpunkt (Petstore / Echo)</label>
+              <label class="field-label" for="http-target">Ziel-Endpunkt (Öffentliche Swagger UI / Docker A00)</label>
               <select id="http-target">
-                <option value="http://localhost:8080/api/v3/pet">Petstore: /api/v3/pet</option>
-                <option value="http://localhost:8080/api/v3/pet/2026">Petstore: /api/v3/pet/2026</option>
-                <option value="http://localhost:8080/api/v3/pet/99999999">Petstore: /api/v3/pet/99999999 (Unbekannt)</option>
-                <option value="http://localhost:8180/headers">Echo: /headers</option>
+                <option value="https://petstore3.swagger.io/api/v3/pet">Öffentlich (Swagger UI): petstore3.swagger.io/api/v3/pet</option>
+                <option value="https://petstore3.swagger.io/api/v3/pet/202611">Öffentlich (Swagger UI): petstore3.swagger.io/api/v3/pet/202611</option>
+                <option value="https://petstore3.swagger.io/api/v3/pet/99999999">Öffentlich (Swagger UI): petstore3.swagger.io/api/v3/pet/99999999 (Unbekannt)</option>
+                <option value="https://httpbin.org/headers">Öffentlich (Swagger UI): httpbin.org/headers</option>
+                <option value="http://localhost:8080/api/v3/pet">Docker A00: localhost:8080/api/v3/pet</option>
+                <option value="http://localhost:8180/headers">Docker A00: localhost:8180/headers</option>
               </select>
             </div>
             <div>

@@ -56,12 +56,12 @@ nav:
       - Schnellstart (15 Min): quick-start.md
       - Lernpfade: learning-guide.md
       - Didaktisches Konzept: concept.md
-      - "M00: Labor-Setup & Terminal-Crashkurs": setup/m00-setup.md
+      - "M00: Zero-Install-Start (Swagger UI)": setup/m00-setup.md
       - Roadmap: roadmap.md
       - KI-Leitplanken (AGENTS.md): agents.md
   - Basis-Lehrgang (M01–M12):
-      - "Stufe 1 — Grundlagen (GUI-first)":
-          - "M01: HTTP-Fundament & erste Requests": module/M01.md
+      - "Stufe 1 — Grundlagen (Swagger UI & GUI)":
+          - "M01: HTTP-Fundament (Swagger Web UI)": module/M01.md
           - "M02: OpenAPI & Bruno Desktop": module/M02.md
           - "M03: SOAP 1.1/1.2 & WSDL in SoapUI": module/M03.md
           - "M04: Assertions, Chaining & Mocking": module/M04.md
@@ -102,8 +102,9 @@ nav:
           - "Lösung M10": loesungen/M10.md
           - "Lösung M11": loesungen/M11.md
           - "Lösung M12": loesungen/M12.md
-  - "Advanced: Shell & curl":
+  - "Advanced: Docker-Labor, Shell & curl":
       - Überblick (Advanced-Track): advanced/index.md
+      - "A00: Eigenes Docker-Labor aufsetzen": advanced/A00.md
       - "A01: HTTP-Fundament & curl / jq": advanced/A01.md
       - "A02: SOAP & --data-binary": advanced/A02.md
       - "A03: Secret-Hygiene in der Shell": advanced/A03.md

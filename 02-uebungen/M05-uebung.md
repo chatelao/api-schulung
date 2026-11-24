@@ -1,11 +1,11 @@
 ---
 module_id: M05
-title: "Klassische Credentials & Secret-Hygiene in Bruno und SoapUI"
+title: "Klassische Credentials & Secret-Hygiene (Swagger Web UI & Bruno)"
 level: "Stufe 2 - Sicherheit"
 duration_minutes: 90
-tools: ["Bruno Desktop (OpenCollection YAML)", "SoapUI Open Source 5.10.1"]
+tools: ["Webbrowser (HTTPBin Swagger Web UI)", "Bruno Desktop (OpenCollection YAML)", "SoapUI OS"]
 standards: ["RFC 7617", "RFC 7616", "RFC 6750"]
-lab_services: ["go-httpbin"]
+lab_services: ["public (httpbin.org)", "optional A00: go-httpbin"]
 prerequisites: ["M01", "M02"]
 ---
 
@@ -13,26 +13,24 @@ prerequisites: ["M01", "M02"]
 
 ## 1. Szenario und Zielzustand
 
-Ein Security-Audit hat ergeben, dass API-Keys bisher ungeschützt in Projektdateien gespeichert wurden. Du sollst in **Bruno Desktop** alle vier klassischen Authentifizierungsverfahren (**Basic**, **Digest**, **API-Key** und **Bearer Token**) gegen `go-httpbin` (`http://localhost:8180`) einrichten, dabei konsequent auf **Secret-Variablen (`secret: true`)** setzen und verstehen, warum Base64 keine Verschlüsselung bietet.
+Ein Security-Audit hat ergeben, dass API-Keys bisher ungeschützt in Projektdateien gespeichert wurden. Du testest Basic- und Bearer-Authentifizierung zuerst direkt in der **HTTPBin Swagger Web UI (`https://httpbin.org/`)**, richtest anschliessend Secret-Variablen (`secret: true`) in **Bruno Desktop** mit dem **`public`-Environment** ein (kein Docker erforderlich!) und beweist praktisch, warum Base64 keine Verschlüsselung bietet.
 
 ## 2. Aufgabenpakete
 
-### Aufgabe A: Secret-Variablen in Bruno Desktop einrichten
-1. Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) in Bruno Desktop.
-2. Öffne die Environment-Konfiguration **`local`** und sieh dir `environments/local.yml` in einem Texteditor an: Alle Secrets haben `value: ""` und `secret: true`.
-3. Trage in der Bruno-Oberfläche (unter *Environments → local*) die Labor-Werte aus `lab/.env.example` (`basicPass`, `apiKey`, `bearerToken`) in die Secret-Felder ein und speichere.
-4. Öffne `environments/local.yml` erneut im Texteditor und prüfe, dass die eingetragenen Geheimnisse **nicht** im Klartext in der Datei erschienen sind.
+### Aufgabe A: Zero-Install-Test in der HTTPBin Swagger Web UI (`https://httpbin.org/`)
+1. Öffne **https://httpbin.org/** im Browser und teste unter **Auth** den Endpunkt **`GET /basic-auth/{user}/{passwd}`** (`user = labuser`, `passwd = demo-secret`).
+2. Teste **`GET /bearer`** (z. B. in Bruno Desktop gegen `https://httpbin.org/bearer` oder in der Swagger Web UI mit `Authorization: Bearer ...`) und prüfe die Antwort `"authenticated": true`.
 
-### Aufgabe B: Alle vier klassischen Auth-Verfahren testen
-Führe im Ordner **`Classic Auth`** alle vier Requests der Reihe nach aus:
-1. `01-basic-auth` → erwartet `200 OK`, `"authorized": true`
-2. `02-digest-auth` → erwartet `200 OK`, `"authorized": true`
-3. `03-api-key` → erwartet `200 OK`, Header `X-Api-Key` gespiegelt
-4. `04-bearer-token` → erwartet `200 OK`, `"authenticated": true`
+### Aufgabe B: Secret-Variablen in Bruno Desktop einrichten (`public`-Environment)
+1. Öffne [collections/bruno/auth-hygiene-lab/](../collections/bruno/auth-hygiene-lab/opencollection.yml) in Bruno Desktop und wähle **`public`** (oder `local`, falls du das eigene Docker-Labor aus [Advanced A00](../advanced/A00-lokales-labor-docker.md) gestartet hast).
+2. Öffne `environments/public.yml` in einem Texteditor: Alle Secrets haben `value: ""` und `secret: true`.
+3. Trage in der Bruno-Oberfläche (unter *Environments → public*) die Labor-Werte `basicPass = CHANGE_ME_LAB_HTTPBIN`, `apiKey = CHANGE_ME_LAB_API_KEY`, `bearerToken = CHANGE_ME_LAB_STATIC_BEARER` in die Secret-Felder ein und speichere.
+4. Öffne `environments/public.yml` erneut im Texteditor und prüfe, dass die eingetragenen Geheimnisse **nicht** im Klartext in der Datei erschienen sind.
+5. Führe unter **`Classic Auth`** die Requests `01-basic-auth`, `03-api-key` und `04-bearer-token` aus (`200 OK`). *(Für `02-digest-auth` mit dem lokalen Server siehe optional `A00`.)*
 
 ### Aufgabe C: Base64-Kontrolle & Header-Hygiene prüfen
 1. Öffne bei `01-basic-auth` nach dem Senden den Bereich **Timeline** (oder gesendete Request-Header) und kopiere den Text hinter `Authorization: Basic ...`.
-2. Dekodiere diesen Base64-Text mit einem Base64-Decoder (oder in Bruno), um zu belegen, dass Benutzername und Passwort darin sofort im Klartext lesbar sind.
+2. Dekodiere diesen Base64-Text mit einem Base64-Decoder, um zu belegen, dass Benutzername und Passwort darin sofort im Klartext lesbar sind.
 
 ### Bonus-Challenge D: `.env`-Alternativweg erkunden
 Öffne [collections/bruno/auth-hygiene-lab/.env.example](../collections/bruno/auth-hygiene-lab/.env.example) und informiere dich im Bruno-Handbuch über `{{$processEnv.NAME}}`, um Secrets lokal aus einer durch `.gitignore` geschützten `.env`-Datei zu laden.
@@ -42,23 +40,21 @@ Führe im Ordner **`Classic Auth`** alle vier Requests der Reihe nach aus:
 ## 3. Gestufte Hilfestellungen
 
 <details>
-<summary>Tipp 1 (Konzeptionell): Wo speichert Bruno Secret-Variablen statt in local.yml?</summary>
+<summary>Tipp 1 (Konzeptionell): Wo speichert Bruno Secret-Variablen statt in public.yml / local.yml?</summary>
 
 Bruno Desktop legt Werte, die als **Secret** (`secret: true`) markiert sind, lokal verschlüsselt im Benutzer-Speicher ab und schreibt nur den Namen + `secret: true` in die Git-versionierte YAML-Datei.
 
 </details>
 
 <details>
-<summary>Tipp 2 (Konkret): Welche Werte stehen in lab/.env.example?</summary>
+<summary>Tipp 2 (Konkret): Welche Werte verwendet `httpbin.org` / `local`?</summary>
 
-- `basicPass`: `CHANGE_ME_LAB_HTTPBIN`
-- `apiKey`: `CHANGE_ME_LAB_API_KEY`
-- `bearerToken`: `CHANGE_ME_LAB_STATIC_BEARER`
+- Gegen `public` (`https://httpbin.org`): Der Endpunkt `/basic-auth/labuser/{{basicPass}}` akzeptiert **jedes** Passwort, das exakt mit dem Pfadparameter übereinstimmt! Mit `CHANGE_ME_LAB_HTTPBIN` funktionieren daher sowohl `public` als auch `local` identisch.
 
 </details>
 
 ## 4. Selbstkontrolle (Definition of Done)
 
-- [ ] Basic, Digest, API-Key und Bearer liefern in Bruno Desktop gegen `go-httpbin` alle HTTP `200 OK`.
-- [ ] `collections/bruno/auth-hygiene-lab/environments/local.yml` enthält weiterhin keine Klartext-Passwörter.
+- [ ] Basic Auth und Bearer wurden direkt über `https://httpbin.org/` verstanden und getestet.
+- [ ] `collections/bruno/auth-hygiene-lab/environments/public.yml` enthält weiterhin keine Klartext-Passwörter (`secret: true`).
 - [ ] Du kannst erklären, warum Basic Auth nur mit HTTPS eingesetzt werden darf und API-Keys nicht in die URL gehören.

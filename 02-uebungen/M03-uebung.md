@@ -3,9 +3,9 @@ module_id: M03
 title: "SOAP 1.1/1.2 & WSDL-Verträge in SoapUI Open Source"
 level: "Stufe 1 - Grundlagen"
 duration_minutes: 150
-tools: ["SoapUI Open Source 5.10.1", "Bruno Desktop"]
+tools: ["SoapUI Open Source 5.10.1", "Webbrowser", "Bruno Desktop"]
 standards: ["WSDL 1.1", "XSD", "SOAP 1.1", "SOAP 1.2", "WS-I Basic Profile 1.1"]
-lab_services: ["soap-service"]
+lab_services: ["public (CountryInfoService.wso?WSDL)", "optional A00: soap-service"]
 prerequisites: ["M00", "M01"]
 ---
 
@@ -13,25 +13,27 @@ prerequisites: ["M00", "M01"]
 
 ## 1. Szenario und Zielzustand
 
-Ein Kern-ERP-System stellt eine Auftrags- und Steuerberechnungsschnittstelle als SOAP-Webservice (`http://localhost:9000/soap?wsdl`) bereit. Du importierst den WSDL-Vertrag in **SoapUI Open Source 5.10.1**, prüfst seine Standardkonformität, analysierst gültige Antworten sowie gezielte SOAP-Faults im Raw-Tab und lernst den Unterschied zwischen SOAP 1.1 und SOAP 1.2 kennen.
+Du möchtest einen bestehenden SOAP-Webservice ohne Server-Installation kennenlernen. Dazu importierst du den öffentlichen **CountryInfo-WSDL-Vertrag** (`http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL`) in **SoapUI Open Source 5.10.1**, vergleichst SOAP 1.1 mit SOAP 1.2 im Raw-Tab und prüfst die WSDL im Interface Viewer.
+
+*(Optional mit eigenem Docker-Labor aus [Advanced A00](../advanced/A00-lokales-labor-docker.md): Führe Aufgabe C gegen unseren lokalen `OrderService` unter `http://localhost:9000/soap?wsdl` aus.)*
 
 ## 2. Aufgabenpakete
 
-### Aufgabe A: WSDL-Analyse & WS-I Check in SoapUI OS 5.10.1
-1. Erstelle in SoapUI ein neues SOAP-Projekt aus `http://localhost:9000/soap?wsdl` (Alternativ-Fallback ohne Docker: `https://demo.totalshiftleft.ai/soap?wsdl`).
-2. Öffne den *Interface Viewer* (`OrderServiceSoap11Binding`), prüfe die Tabs `Service Endpoints` und `WSDL Content` und führe den **WS-I Compliance Check** aus.
-3. Sende einen gültigen `CalculateTax`-Request (`netAmount: 200.00`, `countryCode: CH`) und prüfe im **Raw-Tab** den exakten `Content-Type` und den `SOAPAction`-Header.
+### Aufgabe A: Öffentliche WSDL-Analyse & WS-I Check in SoapUI OS 5.10.1 (ohne Docker)
+1. Öffne `http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL` zuerst kurz im **Browser**, um eine echte WSDL-XML-Datei zu sehen.
+2. Erstelle in SoapUI ein neues SOAP-Projekt aus dieser WSDL-URL.
+3. Öffne den *Interface Viewer* (`CountryInfoServiceSoapBinding`), prüfe `Service Endpoints` und `WSDL Content` und starte den **WS-I Compliance Check**.
 
-### Aufgabe B: `CreateOrder` und `GetOrder` im SoapUI-Editor ausführen
-1. Sende eine gültige `CreateOrder`-Anfrage (`customerId: CUST-01`, `itemCode: API-COURSE-01`, `quantity: 3`, `netAmount: 49.50`) und notiere die zurückgegebene `orderId`.
-2. Rufe genau diese `orderId` anschliessend über die Operation `GetOrder` wieder ab.
+### Aufgabe B: SOAP 1.1 vs. SOAP 1.2 direkt vergleichen
+1. Sende unter **`CountryInfoServiceSoapBinding`** (SOAP 1.1) die Operation `CapitalCity` mit `sCountryISOCode = CH` → prüfe im **Raw-Tab** den `Content-Type` und `SOAPAction`.
+2. Sende unter **`CountryInfoServiceSoapBinding12`** (SOAP 1.2) die Operation `CountryName` mit `sCountryISOCode = DE` → vergleiche im **Raw-Tab** den geänderten `Content-Type` (`application/soap+xml`) und den geänderten `Envelope`-Namespace (`2003/05/soap-envelope`).
 
-### Aufgabe C: SOAP-Fault-Diagnose (1.1 vs. 1.2)
-1. Ändere im `CreateOrder`-Request das Feld `<v1:quantity>` auf `NICHT_GUELTIG` und sende ihn ab. Notiere `<faultcode>` und `<faultstring>`.
-2. Teste in **Bruno Desktop** einen manuellen `POST`-Request gegen `http://localhost:9000/soap` mit dem Inhalt von [create-order-soap12.xml](../01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/create-order-soap12.xml) und dem Header `Content-Type: application/soap+xml; charset=utf-8`. Provoziere anschliessend mit `GetOrderRequest` (`ORD-9999`) einen SOAP-1.2-Fault (`<soap:Code>` / `<soap:Reason>`).
+### Aufgabe C (Mit eigenem Labor `A00` oder XML-Inspektion): XSD-Fault-Diagnose (`OrderService`)
+1. Falls du das lokale Container-Labor aus [Advanced A00](../advanced/A00-lokales-labor-docker.md) gestartet hast: Importiere [order-service-soapui-project.xml](../collections/soapui/order-service-soapui-project.xml), sende `CalculateTax` (`netAmount: 200.00`, `countryCode: CH`) und provoziere anschliessend mit `quantity = NICHT_GUELTIG` bei `CreateOrder` einen XSD-Fault (`soap:Client`).
+2. **Ohne Docker:** Öffne die XML-Dateien [create-order-soap11.xml](../01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/create-order-soap11.xml), [create-order-soap12.xml](../01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/create-order-soap12.xml) und [invalid-xsd-fault.xml](../01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/invalid-xsd-fault.xml) sowie [order.wsdl](../lab/soap-service/order.wsdl) und markiere die Unterschiede der Namespaces und den XSD-Typfehler.
 
-### Bonus-Challenge D: `SOAPAction`-Pflicht bei SOAP 1.1 testen
-Sende in Bruno Desktop den Inhalt von [create-order-soap11.xml](../01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/create-order-soap11.xml) mit `Content-Type: text/xml; charset=utf-8` einmal **ohne** `SOAPAction`-Header und einmal **mit** `SOAPAction: "http://api-schulung.local/orders/v1/CreateOrder"`.
+### Bonus-Challenge D: SOAP im Interaktiven Lernstudio vergleichen
+Öffne im **Interaktiven Lernstudio** das Labor [4. SOAP 1.1/1.2 & WS-Security](https://chatelao.github.io/api-schulung/#labs:soap) und vergleiche die Header-Struktur von SOAP 1.1 und SOAP 1.2.
 
 > **Hinweis:** Die Shell-/Terminal-Übungen mit `curl --data-binary` findest du in [Advanced A02](../advanced/A02-soap-curl-databinary.md).
 
@@ -40,7 +42,7 @@ Sende in Bruno Desktop den Inhalt von [create-order-soap11.xml](../01-module/M03
 <details>
 <summary>Tipp 1 (Konzeptionell): Warum braucht SOAP 1.1 den Header SOAPAction?</summary>
 
-SOAP 1.1 trennt Transport-Routing (`SOAPAction`-HTTP-Header) vom XML-Inhalt. Ohne `SOAPAction`-Header wissen Gateways und strenge SOAP-1.1-Server nicht, welche Operation im Body gemeint ist.
+SOAP 1.1 trennt Transport-Routing (`SOAPAction`-HTTP-Header) vom XML-Inhalt. Bei SOAP 1.2 steckt das Routing direkt im `Content-Type: application/soap+xml; action=...` bzw. im Body-Element.
 
 </details>
 
@@ -53,7 +55,6 @@ Drücke im XML-Request-Editor von SoapUI einfach **`Alt+V`** (oder Rechtsklick �
 
 ## 4. Selbstkontrolle (Definition of Done)
 
-- [ ] WSDL wurde in SoapUI OS 5.10.1 importiert und per WS-I Compliance geprüft.
-- [ ] `CalculateTax`, `CreateOrder` und `GetOrder` liefern `200 OK` mit validen XML-Antworten.
-- [ ] Der XSD-Typfehler liefert einen SOAP-1.1-Fault (`<faultcode>soap:Client</faultcode>`).
-- [ ] Der Unterschied zwischen `text/xml` + `SOAPAction` (SOAP 1.1) und `application/soap+xml` (SOAP 1.2) ist im Raw-Tab/Header sichtbar geworden.
+- [ ] Die öffentliche WSDL (`CountryInfoService`) wurde im Browser und in SoapUI OS 5.10.1 untersucht.
+- [ ] `CapitalCity` (`CH` → `Bern`) und `CountryName` (`DE` → `Germany`) liefern gültige SOAP-Antworten.
+- [ ] Der Unterschied zwischen `text/xml` + `SOAPAction` (SOAP 1.1) und `application/soap+xml` (SOAP 1.2) wurde im Raw-Tab verglichen.
