@@ -1,0 +1,85 @@
+openapi: 3.1.0
+info:
+  title: API-Schulung Security Schemes Demo
+  version: 1.0.0
+  description: >
+    Demonstriert alle fuenf OpenAPI-3.1-Sicherheitstypen sowie UND-, ODER-,
+    optionale ({}) und oeffentliche ([]) Sicherheitsregeln.
+servers:
+  - url: http://localhost:8180
+    description: go-httpbin HTTP
+  - url: https://localhost:8443
+    description: tls-proxy mTLS
+
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    mtlsAuth:
+      type: mutualTLS
+      description: Client-Zertifikat aus lab/certs/out/client.crt erforderlich
+    oauth2Auth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: http://localhost:8081/realms/api-lab/protocol/openid-connect/auth
+          tokenUrl: http://localhost:8081/realms/api-lab/protocol/openid-connect/token
+          scopes:
+            orders:read: Bestellungen lesen
+            orders:admin: Administrative Bestellaktionen
+    oidcAuth:
+      type: openIdConnect
+      openIdConnectUrl: http://localhost:8081/realms/api-lab/.well-known/openid-configuration
+
+security:
+  - bearerAuth: []
+
+paths:
+  /status/200:
+    get:
+      operationId: getHealth
+      summary: Oeffentlicher Health-Endpunkt (ueberschreibt globales security)
+      security: []
+      responses:
+        "200":
+          description: Dienst betriebsbereit
+
+  /headers:
+    get:
+      operationId: readWithApiKeyOrBearer
+      summary: Lese-Endpunkt (apiKeyAuth ODER bearerAuth)
+      security:
+        - apiKeyAuth: []
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Header-Echo
+
+  /anything/catalog:
+    get:
+      operationId: readOptionalCatalog
+      summary: Optional authentifizierter Katalog (anonym {} ODER apiKeyAuth)
+      security:
+        - {}
+        - apiKeyAuth: []
+      responses:
+        "200":
+          description: Katalogdaten
+
+  /anything/admin:
+    post:
+      operationId: adminAction
+      summary: Hochsicherheits-Endpunkt (mtlsAuth UND oauth2Auth)
+      security:
+        - mtlsAuth: []
+          oauth2Auth:
+            - orders:admin
+      responses:
+        "200":
+          description: Admin-Aktion ausgefuehrt

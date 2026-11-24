@@ -1,0 +1,29 @@
+info:
+  name: Mutual TLS Verified (8443)
+  type: http
+  seq: 2
+  tags:
+    - m07
+    - mtls
+http:
+  method: GET
+  url: "{{mtlsURL}}/headers"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("mTLS Client-Zertifikat verifiziert", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.headers["X-Tls-Mode"][0]).to.equal("mtls-verified");
+          expect(res.body.headers["X-Client-Cert-Verify"][0]).to.equal("SUCCESS");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

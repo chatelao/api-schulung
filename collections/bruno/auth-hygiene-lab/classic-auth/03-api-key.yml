@@ -1,0 +1,32 @@
+info:
+  name: Static API Key Header
+  type: http
+  seq: 3
+  tags:
+    - m05
+    - auth
+http:
+  method: GET
+  url: "{{httpbinURL}}/headers"
+  auth:
+    type: apikey
+    key: X-Api-Key
+    value: "{{apiKey}}"
+    placement: header
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("API-Key wurde im Header uebermittelt", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.headers["X-Api-Key"][0]).to.be.a("string").and.not.empty;
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,30 @@
+info:
+  name: Static Bearer Token
+  type: http
+  seq: 4
+  tags:
+    - m05
+    - auth
+http:
+  method: GET
+  url: "{{httpbinURL}}/bearer"
+  auth:
+    type: bearer
+    token: "{{bearerToken}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("Bearer Token akzeptiert", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.authenticated).to.equal(true);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

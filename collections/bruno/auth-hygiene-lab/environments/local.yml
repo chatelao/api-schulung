@@ -1,0 +1,19 @@
+name: local
+variables:
+  - name: httpbinURL
+    value: http://localhost:8180
+  - name: tlsURL
+    value: https://localhost:8444
+  - name: mtlsURL
+    value: https://localhost:8443
+  - name: basicUser
+    value: labuser
+  - name: basicPass
+    value: ""
+    secret: true
+  - name: apiKey
+    value: ""
+    secret: true
+  - name: bearerToken
+    value: ""
+    secret: true

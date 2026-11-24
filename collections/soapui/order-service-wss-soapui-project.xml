@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="9b2e8d01-2222-4000-8000-000000000001" activeEnvironment="Default" name="OrderServiceWSS" resourceRoot="${projectDir}" soapui-version="5.10.1" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config">
+  <con:settings/>
+  <con:interface xsi:type="con:WsdlInterface" id="9b2e8d01-2222-4000-8000-000000000002" wsaVersion="NONE" name="OrderServiceSoap11Binding" type="wsdl" bindingName="{http://api-schulung.local/orders/v1}OrderServiceSoap11Binding" soapVersion="1_1" anonymous="optional" definition="http://localhost:9000/soap?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache type="TEXT" rootPart="http://localhost:9000/soap?wsdl"/>
+    <con:endpoints>
+      <con:endpoint>http://localhost:9000/soap/secure</con:endpoint>
+    </con:endpoints>
+    <con:operation id="9b2e8d01-2222-4000-8000-000000000010" isOneWay="false" action="http://api-schulung.local/orders/v1/CreateSecureOrder" name="CreateSecureOrder" bindingOperationName="CreateSecureOrder" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="9b2e8d01-2222-4000-8000-000000000011" name="SecureRequest" outgoingWss="LabOutgoingWSS" incomingWss="LabIncomingWSS">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://localhost:9000/soap/secure</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:CreateSecureOrderRequest>
+         <v1:orderId>ORD-1000</v1:orderId>
+         <v1:customerId>CUST-42</v1:customerId>
+         <v1:netAmount>99.80</v1:netAmount>
+      </v1:CreateSecureOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+        <con:credentials>
+          <con:username>lab-wss-user</con:username>
+          <con:password>CHANGE_ME_LAB_WSS_PASS</con:password>
+        </con:credentials>
+        <con:wsaConfig mustUnderstand="NONE" version="200508" action="http://api-schulung.local/orders/v1/CreateSecureOrder"/>
+      </con:call>
+    </con:operation>
+  </con:interface>
+  <con:testSuite id="9b2e8d01-2222-4000-8000-000000000100" name="SecureOrderTestSuite">
+    <con:settings/>
+    <con:runType>SEQUENTIAL</con:runType>
+    <con:testCase id="9b2e8d01-2222-4000-8000-000000000101" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="SecureOrderTestCase" searchProperties="true">
+      <con:settings/>
+      <con:testStep type="request" id="9b2e8d01-2222-4000-8000-000000000110" name="CreateSecureOrder">
+        <con:settings/>
+        <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:interface>OrderServiceSoap11Binding</con:interface>
+          <con:operation>CreateSecureOrder</con:operation>
+          <con:request name="CreateSecureOrder" id="9b2e8d01-2222-4000-8000-000000000111" outgoingWss="LabOutgoingWSS" incomingWss="LabIncomingWSS">
+            <con:settings/>
+            <con:encoding>UTF-8</con:encoding>
+            <con:endpoint>http://localhost:9000/soap/secure</con:endpoint>
+            <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:CreateSecureOrderRequest>
+         <v1:orderId>ORD-1000</v1:orderId>
+         <v1:customerId>CUST-42</v1:customerId>
+         <v1:netAmount>99.80</v1:netAmount>
+      </v1:CreateSecureOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+            <con:assertion type="SOAP Response" id="9b2e8d01-2222-4000-8000-000000000112" name="SOAP Response"/>
+            <con:assertion type="XPath Match" id="9b2e8d01-2222-4000-8000-000000000113" name="Signature Verified">
+              <con:configuration>
+                <path>declare namespace tns='http://api-schulung.local/orders/v1';
+//tns:CreateSecureOrderResponse/tns:signatureVerified</path>
+                <content>true</content>
+                <allowWildcards>false</allowWildcards>
+                <ignoreNamspaceDifferences>false</ignoreNamspaceDifferences>
+                <ignoreComments>false</ignoreComments>
+              </con:configuration>
+            </con:assertion>
+            <con:assertion type="WS-Security Status" id="9b2e8d01-2222-4000-8000-000000000114" name="WS-Security Status"/>
+            <con:credentials>
+              <con:username>lab-wss-user</con:username>
+              <con:password>CHANGE_ME_LAB_WSS_PASS</con:password>
+            </con:credentials>
+            <con:wsaConfig mustUnderstand="NONE" version="200508"/>
+          </con:request>
+        </con:config>
+      </con:testStep>
+      <con:properties/>
+    </con:testCase>
+    <con:properties/>
+  </con:testSuite>
+  <con:properties>
+    <con:property>
+      <con:name>wssUser</con:name>
+      <con:value>lab-wss-user</con:value>
+    </con:property>
+  </con:properties>
+  <con:wssContainer>
+    <con:crypto>
+      <con:source>../../lab/certs/out/client-keystore.jks</con:source>
+      <con:password>CHANGE_ME_LAB_ONLY</con:password>
+      <con:type>KEYSTORE</con:type>
+    </con:crypto>
+    <con:crypto>
+      <con:source>../../lab/certs/out/lab-truststore.jks</con:source>
+      <con:password>CHANGE_ME_LAB_ONLY</con:password>
+      <con:type>TRUSTSTORE</con:type>
+    </con:crypto>
+    <con:incoming>
+      <con:name>LabIncomingWSS</con:name>
+      <con:decryptCrypto>client-keystore.jks</con:decryptCrypto>
+      <con:signatureCrypto>lab-truststore.jks</con:signatureCrypto>
+    </con:incoming>
+    <con:outgoing>
+      <con:name>LabOutgoingWSS</con:name>
+      <con:username>lab-wss-user</con:username>
+      <con:password>CHANGE_ME_LAB_WSS_PASS</con:password>
+      <con:entry type="Timestamp">
+        <con:configuration>
+          <timeToLive>300</timeToLive>
+          <strictTimestamp>true</strictTimestamp>
+        </con:configuration>
+      </con:entry>
+      <con:entry type="Username">
+        <con:configuration>
+          <addCreated>true</addCreated>
+          <addNonce>true</addNonce>
+          <passwordType>PasswordDigest</passwordType>
+        </con:configuration>
+      </con:entry>
+      <con:entry type="Signature">
+        <con:configuration>
+          <crypto>client-keystore.jks</crypto>
+          <keyAlias>api-lab-client</keyAlias>
+          <keyPassword>CHANGE_ME_LAB_ONLY</keyPassword>
+          <keyIdentifierType>3</keyIdentifierType>
+          <signatureAlgorithm>http://www.w3.org/2001/04/xmldsig-more#rsa-sha256</signatureAlgorithm>
+          <signatureCanonicalization>http://www.w3.org/2001/10/xml-exc-c14n#</signatureCanonicalization>
+          <digestAlgorithm>http://www.w3.org/2001/04/xmlenc#sha256</digestAlgorithm>
+          <useSingleCert>true</useSingleCert>
+          <parts>
+            <con:part>
+              <con:name>Body</con:name>
+              <con:namespace>http://schemas.xmlsoap.org/soap/envelope/</con:namespace>
+              <con:encode>Element</con:encode>
+            </con:part>
+          </parts>
+        </con:configuration>
+      </con:entry>
+    </con:outgoing>
+  </con:wssContainer>
+  <con:oAuth2ProfileContainer/>
+  <con:oAuth1ProfileContainer/>
+</con:soapui-project>
