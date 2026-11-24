@@ -56,8 +56,10 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Bruno CLI installieren
-        run: npm install -g @usebruno/cli && bru --version
+      - name: Bruno CLI und Python WSS-Test-Abhaengigkeiten installieren
+        run: |
+          npm install -g @usebruno/cli && bru --version
+          python3 -m pip install --quiet lxml signxml
 
       - name: Labor-Umgebung, Zertifikate und Docker-Stack starten
         run: |
