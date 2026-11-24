@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://api-schulung.local/orders/v1"
+    targetNamespace="http://api-schulung.local/orders/v1"
+    name="OrderService">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://api-schulung.local/orders/v1" elementFormDefault="qualified">
+
+      <xsd:element name="CreateOrderRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="customerId" type="xsd:string"/>
+            <xsd:element name="itemCode" type="xsd:string"/>
+            <xsd:element name="quantity" type="xsd:positiveInteger"/>
+            <xsd:element name="netAmount" type="xsd:decimal"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="CreateOrderResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+            <xsd:element name="status" type="xsd:string"/>
+            <xsd:element name="totalAmount" type="xsd:decimal"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetOrderRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="GetOrderResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+            <xsd:element name="customerId" type="xsd:string"/>
+            <xsd:element name="itemCode" type="xsd:string"/>
+            <xsd:element name="quantity" type="xsd:positiveInteger"/>
+            <xsd:element name="totalAmount" type="xsd:decimal"/>
+            <xsd:element name="status" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="CalculateTaxRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="netAmount" type="xsd:decimal"/>
+            <xsd:element name="countryCode" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="CalculateTaxResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="taxRate" type="xsd:decimal"/>
+            <xsd:element name="taxAmount" type="xsd:decimal"/>
+            <xsd:element name="grossAmount" type="xsd:decimal"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="CreateSecureOrderRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+            <xsd:element name="customerId" type="xsd:string"/>
+            <xsd:element name="netAmount" type="xsd:decimal"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="CreateSecureOrderResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="orderId" type="xsd:string"/>
+            <xsd:element name="billingStatus" type="xsd:string"/>
+            <xsd:element name="verifiedUser" type="xsd:string"/>
+            <xsd:element name="signatureVerified" type="xsd:boolean"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+
+    </xsd:schema>
+  </wsdl:types>
+
+  <wsdl:message name="CreateOrderInput">
+    <wsdl:part name="parameters" element="tns:CreateOrderRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CreateOrderOutput">
+    <wsdl:part name="parameters" element="tns:CreateOrderResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetOrderInput">
+    <wsdl:part name="parameters" element="tns:GetOrderRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetOrderOutput">
+    <wsdl:part name="parameters" element="tns:GetOrderResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CalculateTaxInput">
+    <wsdl:part name="parameters" element="tns:CalculateTaxRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CalculateTaxOutput">
+    <wsdl:part name="parameters" element="tns:CalculateTaxResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CreateSecureOrderInput">
+    <wsdl:part name="parameters" element="tns:CreateSecureOrderRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CreateSecureOrderOutput">
+    <wsdl:part name="parameters" element="tns:CreateSecureOrderResponse"/>
+  </wsdl:message>
+
+  <wsdl:portType name="OrderServicePortType">
+    <wsdl:operation name="CreateOrder">
+      <wsdl:input message="tns:CreateOrderInput"/>
+      <wsdl:output message="tns:CreateOrderOutput"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrder">
+      <wsdl:input message="tns:GetOrderInput"/>
+      <wsdl:output message="tns:GetOrderOutput"/>
+    </wsdl:operation>
+    <wsdl:operation name="CalculateTax">
+      <wsdl:input message="tns:CalculateTaxInput"/>
+      <wsdl:output message="tns:CalculateTaxOutput"/>
+    </wsdl:operation>
+    <wsdl:operation name="CreateSecureOrder">
+      <wsdl:input message="tns:CreateSecureOrderInput"/>
+      <wsdl:output message="tns:CreateSecureOrderOutput"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="OrderServiceSoap11Binding" type="tns:OrderServicePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="CreateOrder">
+      <soap:operation soapAction="http://api-schulung.local/orders/v1/CreateOrder" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrder">
+      <soap:operation soapAction="http://api-schulung.local/orders/v1/GetOrder" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CalculateTax">
+      <soap:operation soapAction="http://api-schulung.local/orders/v1/CalculateTax" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateSecureOrder">
+      <soap:operation soapAction="http://api-schulung.local/orders/v1/CreateSecureOrder" style="document"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="OrderService">
+    <wsdl:port name="OrderServiceSoap11Port" binding="tns:OrderServiceSoap11Binding">
+      <soap:address location="http://localhost:9000/soap"/>
+    </wsdl:port>
+    <wsdl:port name="OrderServiceSecureSoap11Port" binding="tns:OrderServiceSoap11Binding">
+      <soap:address location="http://localhost:9000/soap/secure"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

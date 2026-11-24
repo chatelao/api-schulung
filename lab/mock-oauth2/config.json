@@ -1,0 +1,37 @@
+{
+  "interactiveLogin": true,
+  "httpServer": {
+    "type": "NettyWrapper"
+  },
+  "tokenCallbacks": [
+    {
+      "issuerId": "default",
+      "tokenExpiry": 300,
+      "requestMappings": [
+        {
+          "requestParam": "grant_type",
+          "match": "client_credentials",
+          "claims": {
+            "sub": "m2m-service-client",
+            "azp": "m2m-service-client",
+            "scope": "orders:read orders:write",
+            "roles": ["service-account"],
+            "aud": ["api-lab-orders"]
+          }
+        },
+        {
+          "requestParam": "grant_type",
+          "match": "authorization_code",
+          "claims": {
+            "sub": "alice-mock-id",
+            "preferred_username": "alice",
+            "email": "alice@api-lab.local",
+            "name": "Alice Tester",
+            "roles": ["api-user"],
+            "aud": ["api-lab-orders"]
+          }
+        }
+      ]
+    }
+  ]
+}
