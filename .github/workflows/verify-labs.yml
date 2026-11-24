@@ -87,7 +87,7 @@ jobs:
             --output /tmp/ci-petstore-import \
             --collection-name "CI Petstore" \
             --collection-format=opencollection
-          test -f /tmp/ci-petstore-import/opencollection.yml
+          test -n "$(find /tmp/ci-petstore-import -name 'opencollection.yml')"
           test -z "$(find /tmp/ci-petstore-import -name '*.bru')"
 
       - name: curl-Lab-Skripte ausfuehren
