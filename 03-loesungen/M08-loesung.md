@@ -25,7 +25,7 @@ Erwartete Antwort (HTTP `500`): `<faultcode>wsse:FailedAuthentication</faultcode
 
 ## Lösung Aufgabe B & C: SoapUI OS 5.10.1 WSS-Workflow
 
-Das vorkonfigurierte Projekt liegt unter [collections/soapui/order-service-wss-soapui-project.xml](../../collections/soapui/order-service-wss-soapui-project.xml):
+Das vorkonfigurierte Projekt liegt unter [collections/soapui/order-service-wss-soapui-project.xml](../collections/soapui/order-service-wss-soapui-project.xml):
 - **Keystore-Pfad:** `../../lab/certs/out/client-keystore.jks` (Passwort: `CHANGE_ME_LAB_ONLY`)
 - **Outgoing WSS (`LabOutgoingWSS`):**
   1. `Timestamp` (`TTL=300`)

@@ -2,7 +2,7 @@
 
 ## Lösung Aufgabe A & B: `curl` mit Custom CA und mTLS
 
-Siehe ausführbares Referenzskript: [scripts/curl/m07-mtls-test.sh](../../scripts/curl/m07-mtls-test.sh).
+Siehe ausführbares Referenzskript: [scripts/curl/m07-mtls-test.sh](../scripts/curl/m07-mtls-test.sh).
 
 Zertifikatsprüfung:
 ```bash

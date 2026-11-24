@@ -9,7 +9,7 @@
 
 ## Lösung Aufgabe B: Headless M2M (`curl` & `bru run`)
 
-- `curl`-Referenz: [scripts/curl/m10-client-credentials.sh](../../scripts/curl/m10-client-credentials.sh)
+- `curl`-Referenz: [scripts/curl/m10-client-credentials.sh](../scripts/curl/m10-client-credentials.sh)
 - Bruno CLI:
   ```bash
   set -a && source lab/.env && set +a

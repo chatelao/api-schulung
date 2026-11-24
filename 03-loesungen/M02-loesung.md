@@ -27,7 +27,7 @@ ls -la /tmp/my-petstore-yaml/opencollection.yml
 
 ## Lösung Aufgabe C: Parametrisierte Bruno-Collection ausführen
 
-Die fertige OpenCollection-YAML-Referenz befindet sich unter [collections/bruno/petstore-lab/](../../collections/bruno/petstore-lab/opencollection.yml):
+Die fertige OpenCollection-YAML-Referenz befindet sich unter [collections/bruno/petstore-lab/](../collections/bruno/petstore-lab/opencollection.yml):
 
 ```bash
 cd collections/bruno/petstore-lab

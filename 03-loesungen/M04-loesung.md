@@ -11,7 +11,7 @@ Da `01-create-pet.yml` `bru.setVar("petId", ...)` nutzt, bleibt `environments/lo
 
 ## Lösung Aufgabe B: SoapUI `Property Transfer` & `XPath Match`
 
-In [collections/soapui/order-service-soapui-project.xml](../../collections/soapui/order-service-soapui-project.xml) ist der TestCase `OrderChainingTestCase` bereits vollständig konfiguriert:
+In [collections/soapui/order-service-soapui-project.xml](../collections/soapui/order-service-soapui-project.xml) ist der TestCase `OrderChainingTestCase` bereits vollständig konfiguriert:
 - **Source XPath (`CreateOrder`):**
   ```xpath
   declare namespace tns='http://api-schulung.local/orders/v1';

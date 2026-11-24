@@ -1,11 +1,21 @@
-name: Verify API-Schulung Labs
+name: Verify API-Schulung Labs & Publish Docs
 
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   static-hygiene-and-syntax:
@@ -28,24 +38,26 @@ jobs:
             exit 1
           fi
 
-      - name: Python-, YAML-, JSON- und XML-Syntax pruefen
+      - name: Python-, YAML-, JSON-, XML- und MkDocs-Build pruefen
         run: |
-          python3 -m pip install --quiet pyyaml lxml
-          python3 -m py_compile lab/soap-service/app.py
+          python3 -m pip install --quiet pyyaml lxml -r docs-requirements.txt
+          python3 -m py_compile lab/soap-service/app.py scripts/build-docs.py
           python3 -c "
           import glob, json, yaml
           from lxml import etree
           for jf in glob.glob('lab/**/*.json', recursive=True) + glob.glob('collections/**/*.json', recursive=True):
               json.load(open(jf))
-          for yf in glob.glob('collections/bruno/**/*.yml', recursive=True) + ['lab/docker-compose.yml', '01-module/M06-openapi-security-schemes/openapi-security-demo.yaml', '04-projekte/capstone-hybrid-order/openapi-hybrid-order.yaml']:
+          for yf in glob.glob('collections/bruno/**/*.yml', recursive=True) + ['lab/docker-compose.yml', '.readthedocs.yaml', '01-module/M06-openapi-security-schemes/openapi-security-demo.yaml', '04-projekte/capstone-hybrid-order/openapi-hybrid-order.yaml']:
               yaml.safe_load(open(yf))
           for xf in glob.glob('collections/soapui/*.xml') + glob.glob('lab/soap-service/*.wsdl') + glob.glob('01-module/M03-soap-wsdl-soapui-curl/beispiel-payloads/*.xml'):
               etree.parse(xf)
           print('Alle Syntax-Checks bestanden.')
           "
+          python3 scripts/build-docs.py --git-sha "${{ github.sha }}" --run-id "${{ github.run_id }}"
+          mkdocs build --strict
 
   integration-lab-tests:
-    name: Docker-Labor, bru import & bru run Integrationstests
+    name: Docker-Labor, bru run & Docs-Build mit Ergebnissen
     needs: static-hygiene-and-syntax
     runs-on: ubuntu-latest
     steps:
@@ -56,10 +68,10 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Bruno CLI und Python WSS-Test-Abhaengigkeiten installieren
+      - name: Bruno CLI und Python-Abhaengigkeiten installieren
         run: |
           npm install -g @usebruno/cli && bru --version
-          python3 -m pip install --quiet lxml signxml
+          python3 -m pip install --quiet lxml signxml -r docs-requirements.txt
 
       - name: Labor-Umgebung, Zertifikate und Docker-Stack starten
         run: |
@@ -89,7 +101,7 @@ jobs:
           ./scripts/curl/m11-oidc-discovery-jwt.sh
           ./scripts/curl/m12-introspect-revoke.sh
 
-      - name: Bruno Collections (Petstore, Auth/mTLS, Client Credentials, Security Audit, Capstone) ausfuehren
+      - name: Bruno Collections & Capstone mit JUnit-Reports ausfuehren
         run: |
           set -a && source lab/.env && set +a
           mkdir -p reports
@@ -117,8 +129,89 @@ jobs:
             --reporter-skip-headers Authorization \
             --reporter-junit ../../../reports/security-audit.xml)
 
-          ./04-projekte/capstone-hybrid-order/verify-capstone.sh
+          CAPSTONE_JUNIT_REPORT="${PWD}/reports/capstone.xml" ./04-projekte/capstone-hybrid-order/verify-capstone.sh
+
+      - name: Testergebnisse in MkDocs-Seite uebernehmen & GitHub Pages Artifact bauen
+        run: |
+          python3 scripts/build-docs.py \
+            --reports-dir reports \
+            --git-sha "${{ github.sha }}" \
+            --run-id "${{ github.run_id }}"
+          cat docs/ci-results.md >> "$GITHUB_STEP_SUMMARY"
+          mkdocs build --strict
+
+      - name: JUnit-Testberichte als Workflow-Artifact hochladen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-test-reports
+          path: reports/*.xml
+          if-no-files-found: ignore
+
+      - name: GitHub Pages Artifact konfigurieren & hochladen
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+
+      - name: Gebaute MkDocs-Site als Pages-Artifact hochladen
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
 
       - name: Labor-Container bei Abschluss stoppen
         if: always()
         run: docker compose -f lab/docker-compose.yml down -v
+
+  deploy-gh-pages:
+    name: Auf GitHub Pages veroeffentlichen
+    needs: integration-lab-tests
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  publish-readthedocs:
+    name: Read the Docs Build ausloesen
+    needs: integration-lab-tests
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read the Docs API / Webhook pruefen und Build triggern
+        env:
+          RTD_TOKEN: ${{ secrets.READTHEDOCS_TOKEN }}
+          RTD_WEBHOOK_URL: ${{ secrets.READTHEDOCS_WEBHOOK_URL }}
+          RTD_WEBHOOK_SECRET: ${{ secrets.READTHEDOCS_WEBHOOK_SECRET }}
+          RTD_PROJECT: ${{ vars.READTHEDOCS_PROJECT || 'api-schulung' }}
+        run: |
+          VERSION_SLUG="${GITHUB_REF_NAME}"
+          if [[ "${VERSION_SLUG}" == "main" ]]; then
+            VERSION_SLUG="latest"
+          fi
+
+          if [[ -n "${RTD_TOKEN}" ]]; then
+            echo "Triggere Read the Docs Build via API v3 fuer Projekt '${RTD_PROJECT}', Version '${VERSION_SLUG}'..."
+            curl -fsS -X POST \
+              -H "Authorization: Token ${RTD_TOKEN}" \
+              "https://app.readthedocs.org/api/v3/projects/${RTD_PROJECT}/versions/${VERSION_SLUG}/builds/"
+            echo "Read the Docs API-Build erfolgreich ausgeloest."
+          elif [[ -n "${RTD_WEBHOOK_URL}" ]]; then
+            echo "Triggere Read the Docs Build via Webhook..."
+            curl -fsS -X POST "${RTD_WEBHOOK_URL}" \
+              -d "branches=${GITHUB_REF_NAME}" \
+              ${RTD_WEBHOOK_SECRET:+-d "token=${RTD_WEBHOOK_SECRET}"}
+            echo "Read the Docs Webhook erfolgreich ausgeloest."
+          else
+            echo "Hinweis: Kein READTHEDOCS_TOKEN oder READTHEDOCS_WEBHOOK_URL gesetzt."
+            echo "Read the Docs baut automatisch ueber die verbundene GitHub-App anhand von .readthedocs.yaml (mkdocs.yml)."
+            {
+              echo "### Read the Docs"
+              echo "- Konfigurationsdatei: \`.readthedocs.yaml\` (MkDocs Material via \`mkdocs.yml\`)"
+              echo "- Automatischer Build bei GitHub-Push/Tag, sobald das Projekt in Read the Docs verknuepft ist (\`https://api-schulung.readthedocs.io/\`)."
+              echo "- Optionales explizites Triggering nach CI-Gruen: Secret \`READTHEDOCS_TOKEN\` (oder \`READTHEDOCS_WEBHOOK_URL\`) im Repository hinterlegen."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi

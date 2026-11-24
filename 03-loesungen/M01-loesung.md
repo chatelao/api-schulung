@@ -32,7 +32,7 @@ curl -sS -o /dev/null -w "405-Test -> HTTP %{http_code}\n" \
 
 ## Lösung Aufgabe C: Vollständiges CRUD-Skript
 
-Siehe ausführbare Referenzdatei: [scripts/curl/m01-petstore-crud.sh](../../scripts/curl/m01-petstore-crud.sh).
+Siehe ausführbare Referenzdatei: [scripts/curl/m01-petstore-crud.sh](../scripts/curl/m01-petstore-crud.sh).
 
 ## Lösung Bonus-Challenge D: Timing-Messung
 

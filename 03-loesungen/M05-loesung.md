@@ -2,7 +2,7 @@
 
 ## Lösung Aufgabe A: Sichere `curl`-Aufrufe
 
-Siehe ausführbares Referenzskript: [scripts/curl/m05-auth-hygiene.sh](../../scripts/curl/m05-auth-hygiene.sh).
+Siehe ausführbares Referenzskript: [scripts/curl/m05-auth-hygiene.sh](../scripts/curl/m05-auth-hygiene.sh).
 
 ## Lösung Aufgabe B: Bruno `auth-hygiene-lab` per CLI
 

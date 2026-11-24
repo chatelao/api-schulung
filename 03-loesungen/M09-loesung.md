@@ -2,7 +2,7 @@
 
 ## Lösung Aufgabe A & B: Automatisierte Prüfung
 
-Siehe ausführbares Referenzskript: [scripts/curl/m09-pkce-manual.sh](../../scripts/curl/m09-pkce-manual.sh).
+Siehe ausführbares Referenzskript: [scripts/curl/m09-pkce-manual.sh](../scripts/curl/m09-pkce-manual.sh).
 
 ### Erwartete Statuscodes auf `bruno-pkce-client` (bei gültiger `redirect_uri`)
 - `response_type=token` (Implicit): **HTTP `302 Found`** mit `#error=unauthorized_client` (`Implicit flow is disabled for the client.`)

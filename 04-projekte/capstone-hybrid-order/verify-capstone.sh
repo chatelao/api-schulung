@@ -22,11 +22,16 @@ trap 'rm -f "${CAP_BRUNO}/client-cert-config.json"' EXIT
 
 (
   cd "${CAP_BRUNO}"
+  JUNIT_ARGS=()
+  if [[ -n "${CAPSTONE_JUNIT_REPORT:-}" ]]; then
+    JUNIT_ARGS=(--reporter-junit "${CAPSTONE_JUNIT_REPORT}")
+  fi
   bru run -r --env local \
     --cacert "${ROOT_DIR}/lab/certs/out/ca.crt" \
     --client-cert-config ./client-cert-config.json \
     --env-var "m2mClientSecret=${KC_M2M_CLIENT_SECRET:-CHANGE_ME_LAB_M2M_SECRET}" \
-    --reporter-skip-headers Authorization
+    --reporter-skip-headers Authorization \
+    "${JUNIT_ARGS[@]}"
 )
 
 echo ""

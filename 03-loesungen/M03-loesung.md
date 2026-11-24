@@ -8,7 +8,7 @@
 
 ## Lösung Aufgabe B & C: `curl --data-binary` & Fault-Analyse
 
-Siehe ausführbares Referenzskript: [scripts/curl/m03-soap-call.sh](../../scripts/curl/m03-soap-call.sh).
+Siehe ausführbares Referenzskript: [scripts/curl/m03-soap-call.sh](../scripts/curl/m03-soap-call.sh).
 
 ### Diagnose der provozierten Faults
 1. **XSD-Typfehler (`quantity="NICHT_GUELTIG"`):** HTTP `500`, `<faultcode>soap:Client</faultcode>`, `<faultstring>XSD-Validierungsfehler: ...</faultstring>`.

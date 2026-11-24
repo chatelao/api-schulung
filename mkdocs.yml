@@ -1,0 +1,107 @@
+site_name: "Praxis-Schulung API-Nutzung (curl, Bruno, SoapUI, OpenAPI, SOAP, OAuth 2.1 & OIDC)"
+site_description: "26,5-Stunden-Praxiscurriculum für REST/OpenAPI, SOAP/WSDL, WS-Security, OAuth 2.1 (RFC 9700) und OpenID Connect"
+site_url: "https://chatelao.github.io/api-schulung/"
+repo_url: "https://github.com/chatelao/api-schulung"
+repo_name: "chatelao/api-schulung"
+
+theme:
+  name: material
+  language: de
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: In den Dark Mode wechseln
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: In den Light Mode wechseln
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - attr_list
+  - def_list
+
+nav:
+  - Start: index.md
+  - Einstieg & Konzept:
+      - Schnellstart (15 Min): quick-start.md
+      - Lernpfade: learning-guide.md
+      - Didaktisches Konzept: concept.md
+      - "M00: Labor-Setup & Smoke-Tests": setup/m00-setup.md
+      - Roadmap: roadmap.md
+      - KI-Leitplanken (AGENTS.md): agents.md
+  - Module (M01–M12):
+      - "Stufe 1 — Grundlagen":
+          - "M01: HTTP-Fundament & curl": module/M01.md
+          - "M02: OpenAPI & Bruno YAML": module/M02.md
+          - "M03: SOAP 1.1/1.2 & WSDL": module/M03.md
+          - "M04: Assertions, Chaining & Mocking": module/M04.md
+      - "Stufe 2 — Transport- & Nachrichtensicherheit":
+          - "M05: Credentials & Secret-Hygiene": module/M05.md
+          - "M06: OpenAPI securitySchemes": module/M06.md
+          - "M07: TLS, Custom CA & mTLS": module/M07.md
+          - "M08: SOAP WS-Security (WSS)": module/M08.md
+      - "Stufe 3 — OAuth 2.1 & OIDC":
+          - "M09: OAuth 2.0 vs. RFC 9700 / 2.1": module/M09.md
+          - "M10: OAuth-Praxis (PKCE & M2M)": module/M10.md
+          - "M11: OIDC Discovery, JWKS & Tokens": module/M11.md
+          - "M12: Token-Lifecycle, Audits & CI/CD": module/M12.md
+  - Übungen (M01–M12):
+      - "Übung M01": uebungen/M01.md
+      - "Übung M02": uebungen/M02.md
+      - "Übung M03": uebungen/M03.md
+      - "Übung M04": uebungen/M04.md
+      - "Übung M05": uebungen/M05.md
+      - "Übung M06": uebungen/M06.md
+      - "Übung M07": uebungen/M07.md
+      - "Übung M08": uebungen/M08.md
+      - "Übung M09": uebungen/M09.md
+      - "Übung M10": uebungen/M10.md
+      - "Übung M11": uebungen/M11.md
+      - "Übung M12": uebungen/M12.md
+  - Musterlösungen (M01–M12):
+      - "Lösung M01": loesungen/M01.md
+      - "Lösung M02": loesungen/M02.md
+      - "Lösung M03": loesungen/M03.md
+      - "Lösung M04": loesungen/M04.md
+      - "Lösung M05": loesungen/M05.md
+      - "Lösung M06": loesungen/M06.md
+      - "Lösung M07": loesungen/M07.md
+      - "Lösung M08": loesungen/M08.md
+      - "Lösung M09": loesungen/M09.md
+      - "Lösung M10": loesungen/M10.md
+      - "Lösung M11": loesungen/M11.md
+      - "Lösung M12": loesungen/M12.md
+  - Capstone:
+      - Übersicht & Aufgaben: capstone/index.md
+      - Bewertungsrubrik: capstone/rubric.md
+  - CI/CD Ergebnisse: ci-results.md

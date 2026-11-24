@@ -2,7 +2,7 @@
 
 ## Lösung Aufgabe A: Introspection & Revocation
 
-Siehe ausführbares Referenzskript: [scripts/curl/m12-introspect-revoke.sh](../../scripts/curl/m12-introspect-revoke.sh).
+Siehe ausführbares Referenzskript: [scripts/curl/m12-introspect-revoke.sh](../scripts/curl/m12-introspect-revoke.sh).
 
 ## Lösung Aufgabe B: Security-Audit-Suite in Bruno CLI
 

@@ -2,7 +2,7 @@
 
 ## Lösung Aufgabe A: Discovery & JWKS-Key-Matching
 
-Siehe ausführbares Referenzskript: [scripts/curl/m11-oidc-discovery-jwt.sh](../../scripts/curl/m11-oidc-discovery-jwt.sh).
+Siehe ausführbares Referenzskript: [scripts/curl/m11-oidc-discovery-jwt.sh](../scripts/curl/m11-oidc-discovery-jwt.sh).
 
 ## Lösung Aufgabe B: Kontrast ID Token vs. Access Token
 
