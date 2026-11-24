@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="8a1e7c01-1111-4000-8000-000000000001" activeEnvironment="Default" name="OrderServiceLab" resourceRoot="" soapui-version="5.10.1" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config">
+  <con:settings/>
+  <con:interface xsi:type="con:WsdlInterface" id="8a1e7c01-1111-4000-8000-000000000002" wsaVersion="NONE" name="OrderServiceSoap11Binding" type="wsdl" bindingName="{http://api-schulung.local/orders/v1}OrderServiceSoap11Binding" soapVersion="1_1" anonymous="optional" definition="http://localhost:9000/soap?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache type="TEXT" rootPart="http://localhost:9000/soap?wsdl"/>
+    <con:endpoints>
+      <con:endpoint>http://localhost:9000/soap</con:endpoint>
+    </con:endpoints>
+    <con:operation id="8a1e7c01-1111-4000-8000-000000000010" isOneWay="false" action="http://api-schulung.local/orders/v1/CreateOrder" name="CreateOrder" bindingOperationName="CreateOrder" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="8a1e7c01-1111-4000-8000-000000000011" name="Request 1">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://localhost:9000/soap</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:CreateOrderRequest>
+         <v1:customerId>CUST-01</v1:customerId>
+         <v1:itemCode>API-COURSE-01</v1:itemCode>
+         <v1:quantity>2</v1:quantity>
+         <v1:netAmount>50.00</v1:netAmount>
+      </v1:CreateOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+        <con:wsaConfig mustUnderstand="NONE" version="200508" action="http://api-schulung.local/orders/v1/CreateOrder"/>
+      </con:call>
+    </con:operation>
+    <con:operation id="8a1e7c01-1111-4000-8000-000000000020" isOneWay="false" action="http://api-schulung.local/orders/v1/GetOrder" name="GetOrder" bindingOperationName="GetOrder" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="8a1e7c01-1111-4000-8000-000000000021" name="Request 1">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://localhost:9000/soap</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:GetOrderRequest>
+         <v1:orderId>ORD-1000</v1:orderId>
+      </v1:GetOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+        <con:wsaConfig mustUnderstand="NONE" version="200508" action="http://api-schulung.local/orders/v1/GetOrder"/>
+      </con:call>
+    </con:operation>
+    <con:operation id="8a1e7c01-1111-4000-8000-000000000030" isOneWay="false" action="http://api-schulung.local/orders/v1/CalculateTax" name="CalculateTax" bindingOperationName="CalculateTax" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional">
+      <con:settings/>
+      <con:call id="8a1e7c01-1111-4000-8000-000000000031" name="Request 1">
+        <con:settings/>
+        <con:encoding>UTF-8</con:encoding>
+        <con:endpoint>http://localhost:9000/soap</con:endpoint>
+        <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:CalculateTaxRequest>
+         <v1:netAmount>200.00</v1:netAmount>
+         <v1:countryCode>CH</v1:countryCode>
+      </v1:CalculateTaxRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+        <con:wsaConfig mustUnderstand="NONE" version="200508" action="http://api-schulung.local/orders/v1/CalculateTax"/>
+      </con:call>
+    </con:operation>
+  </con:interface>
+  <con:testSuite id="8a1e7c01-1111-4000-8000-000000000100" name="OrderServiceTestSuite">
+    <con:settings/>
+    <con:runType>SEQUENTIAL</con:runType>
+    <con:testCase id="8a1e7c01-1111-4000-8000-000000000101" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="OrderChainingTestCase" searchProperties="true">
+      <con:settings/>
+      <con:testStep type="request" id="8a1e7c01-1111-4000-8000-000000000110" name="CreateOrder">
+        <con:settings/>
+        <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:interface>OrderServiceSoap11Binding</con:interface>
+          <con:operation>CreateOrder</con:operation>
+          <con:request name="CreateOrder" id="8a1e7c01-1111-4000-8000-000000000111">
+            <con:settings/>
+            <con:encoding>UTF-8</con:encoding>
+            <con:endpoint>http://localhost:9000/soap</con:endpoint>
+            <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:CreateOrderRequest>
+         <v1:customerId>CUST-CHAIN-01</v1:customerId>
+         <v1:itemCode>API-LAB-M04</v1:itemCode>
+         <v1:quantity>4</v1:quantity>
+         <v1:netAmount>25.00</v1:netAmount>
+      </v1:CreateOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+            <con:assertion type="SOAP Response" id="8a1e7c01-1111-4000-8000-000000000112" name="SOAP Response"/>
+            <con:assertion type="XPath Match" id="8a1e7c01-1111-4000-8000-000000000113" name="Status CREATED">
+              <con:configuration>
+                <path>declare namespace tns='http://api-schulung.local/orders/v1';
+//tns:CreateOrderResponse/tns:status</path>
+                <content>CREATED</content>
+                <allowWildcards>false</allowWildcards>
+                <ignoreNamspaceDifferences>false</ignoreNamspaceDifferences>
+                <ignoreComments>false</ignoreComments>
+              </con:configuration>
+            </con:assertion>
+            <con:wsaConfig mustUnderstand="NONE" version="200508"/>
+          </con:request>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="transfer" name="TransferOrderId" id="8a1e7c01-1111-4000-8000-000000000120">
+        <con:settings/>
+        <con:config xsi:type="con:PropertyTransfersStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:transfers setNullOnMissingSource="true" transferTextContent="true" failOnError="true" ignoreEmpty="false" transferToAll="false" entitize="false" transferChildNodes="false">
+            <con:name>orderId</con:name>
+            <con:sourceType>Response</con:sourceType>
+            <con:sourceStep>CreateOrder</con:sourceStep>
+            <con:sourcePath>declare namespace tns='http://api-schulung.local/orders/v1';
+//tns:CreateOrderResponse/tns:orderId</con:sourcePath>
+            <con:targetType>Request</con:targetType>
+            <con:targetStep>GetOrder</con:targetStep>
+            <con:targetPath>declare namespace tns='http://api-schulung.local/orders/v1';
+//tns:GetOrderRequest/tns:orderId</con:targetPath>
+            <con:upgraded>true</con:upgraded>
+          </con:transfers>
+        </con:config>
+      </con:testStep>
+      <con:testStep type="request" id="8a1e7c01-1111-4000-8000-000000000130" name="GetOrder">
+        <con:settings/>
+        <con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <con:interface>OrderServiceSoap11Binding</con:interface>
+          <con:operation>GetOrder</con:operation>
+          <con:request name="GetOrder" id="8a1e7c01-1111-4000-8000-000000000131">
+            <con:settings/>
+            <con:encoding>UTF-8</con:encoding>
+            <con:endpoint>http://localhost:9000/soap</con:endpoint>
+            <con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://api-schulung.local/orders/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:GetOrderRequest>
+         <v1:orderId>REPLACE_BY_TRANSFER</v1:orderId>
+      </v1:GetOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request>
+            <con:assertion type="SOAP Response" id="8a1e7c01-1111-4000-8000-000000000132" name="SOAP Response"/>
+            <con:assertion type="XPath Match" id="8a1e7c01-1111-4000-8000-000000000133" name="Customer Match">
+              <con:configuration>
+                <path>declare namespace tns='http://api-schulung.local/orders/v1';
+//tns:GetOrderResponse/tns:customerId</path>
+                <content>CUST-CHAIN-01</content>
+                <allowWildcards>false</allowWildcards>
+                <ignoreNamspaceDifferences>false</ignoreNamspaceDifferences>
+                <ignoreComments>false</ignoreComments>
+              </con:configuration>
+            </con:assertion>
+            <con:wsaConfig mustUnderstand="NONE" version="200508"/>
+          </con:request>
+        </con:config>
+      </con:testStep>
+      <con:properties/>
+    </con:testCase>
+    <con:properties/>
+  </con:testSuite>
+  <con:mockService id="8a1e7c01-1111-4000-8000-000000000200" port="8088" path="/mockOrderService" host="localhost" name="OrderServiceMock">
+    <con:settings/>
+    <con:properties/>
+    <con:mockOperation name="CalculateTax" id="8a1e7c01-1111-4000-8000-000000000201" interface="OrderServiceSoap11Binding" operation="CalculateTax">
+      <con:settings/>
+      <con:defaultResponse>MockResponseCH</con:defaultResponse>
+      <con:dispatchStyle>SEQUENCE</con:dispatchStyle>
+      <con:response name="MockResponseCH" id="8a1e7c01-1111-4000-8000-000000000202" httpResponseStatus="200" encoding="UTF-8">
+        <con:settings/>
+        <con:responseContent><![CDATA[<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://api-schulung.local/orders/v1">
+   <soap:Body>
+      <tns:CalculateTaxResponse>
+         <tns:taxRate>0.081</tns:taxRate>
+         <tns:taxAmount>16.20</tns:taxAmount>
+         <tns:grossAmount>216.20</tns:grossAmount>
+      </tns:CalculateTaxResponse>
+   </soap:Body>
+</soap:Envelope>]]></con:responseContent>
+      </con:response>
+    </con:mockOperation>
+  </con:mockService>
+  <con:properties/>
+  <con:wssContainer/>
+  <con:oAuth2ProfileContainer/>
+  <con:oAuth1ProfileContainer/>
+</con:soapui-project>

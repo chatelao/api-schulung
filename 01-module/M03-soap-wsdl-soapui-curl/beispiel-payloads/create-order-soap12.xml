@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+               xmlns:tns="http://api-schulung.local/orders/v1">
+  <soap:Header/>
+  <soap:Body>
+    <tns:CalculateTaxRequest>
+      <tns:netAmount>148.50</tns:netAmount>
+      <tns:countryCode>CH</tns:countryCode>
+    </tns:CalculateTaxRequest>
+  </soap:Body>
+</soap:Envelope>

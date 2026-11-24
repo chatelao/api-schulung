@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://api-schulung.local/orders/v1">
+  <soap:Header/>
+  <soap:Body>
+    <tns:CreateOrderRequest>
+      <tns:customerId>CUST-01</tns:customerId>
+      <tns:itemCode>API-COURSE-01</tns:itemCode>
+      <tns:quantity>NICHT_GUELTIG</tns:quantity>
+      <tns:netAmount>49.50</tns:netAmount>
+    </tns:CreateOrderRequest>
+  </soap:Body>
+</soap:Envelope>

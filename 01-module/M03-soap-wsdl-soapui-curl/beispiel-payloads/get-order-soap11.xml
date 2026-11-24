@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:tns="http://api-schulung.local/orders/v1">
+  <soap:Header/>
+  <soap:Body>
+    <tns:GetOrderRequest>
+      <tns:orderId>ORD-1000</tns:orderId>
+    </tns:GetOrderRequest>
+  </soap:Body>
+</soap:Envelope>

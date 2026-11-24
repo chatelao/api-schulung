@@ -1,0 +1,55 @@
+info:
+  name: Create Pet
+  type: http
+  seq: 1
+  tags:
+    - smoke
+    - crud
+http:
+  method: POST
+  url: "{{baseURL}}/pet"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "id": 4041,
+        "name": "Bello",
+        "category": {
+          "id": 1,
+          "name": "Dogs"
+        },
+        "photoUrls": [
+          "https://example.invalid/bello.png"
+        ],
+        "status": "available"
+      }
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.name
+      operator: eq
+      value: Bello
+  scripts:
+    - type: after-response
+      code: |-
+        bru.setVar("petId", String(res.body.id));
+    - type: tests
+      code: |-
+        test("Pet wurde erfolgreich angelegt", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.id).to.equal(4041);
+          expect(res.body.status).to.equal("available");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

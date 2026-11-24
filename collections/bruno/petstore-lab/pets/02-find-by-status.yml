@@ -1,0 +1,35 @@
+info:
+  name: Find Pets by Status
+  type: http
+  seq: 2
+  tags:
+    - smoke
+http:
+  method: GET
+  url: "{{baseURL}}/pet/findByStatus?status=available"
+  params:
+    - name: status
+      value: available
+      type: query
+  headers:
+    - name: Accept
+      value: application/json
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("Liste der verfuegbaren Pets ist ein Array", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body).to.be.an("array");
+          expect(res.body.length).to.be.greaterThan(0);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5
