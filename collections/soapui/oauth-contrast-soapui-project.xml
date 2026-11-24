@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="7c3d9e01-3333-4000-8000-000000000001" activeEnvironment="Default" name="OAuthContrastLab" resourceRoot="" soapui-version="5.10.1" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config">
+  <con:settings/>
+  <con:interface xsi:type="con:RestService" id="7c3d9e01-3333-4000-8000-000000000002" wadlVersion="http://wadl.dev.java.net/2009/02" name="HttpbinBearerAPI" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <con:settings/>
+    <con:definitionCache type="TEXT" rootPart=""/>
+    <con:endpoints>
+      <con:endpoint>http://localhost:8180</con:endpoint>
+    </con:endpoints>
+    <con:resource name="BearerEcho" path="/bearer" id="7c3d9e01-3333-4000-8000-000000000010">
+      <con:settings/>
+      <con:parameters/>
+      <con:method name="GET" id="7c3d9e01-3333-4000-8000-000000000011" method="GET">
+        <con:settings/>
+        <con:parameters/>
+        <con:request name="BearerHeaderRequest" id="7c3d9e01-3333-4000-8000-000000000012" mediaType="application/json">
+          <con:settings/>
+          <con:endpoint>http://localhost:8180</con:endpoint>
+          <con:request/>
+          <con:credentials>
+            <con:selectedAuthProfile>KeycloakM2M</con:selectedAuthProfile>
+            <con:addedBasicAuthenticationTypes>Basic</con:addedBasicAuthenticationTypes>
+            <con:authType>OAuth 2.0</con:authType>
+          </con:credentials>
+          <con:parameters/>
+        </con:request>
+      </con:method>
+    </con:resource>
+  </con:interface>
+  <con:properties/>
+  <con:wssContainer/>
+  <con:oAuth2ProfileContainer>
+    <con:oAuth2Profile>
+      <con:name>KeycloakM2M</con:name>
+      <con:clientID>soapui-lab-client</con:clientID>
+      <con:clientSecret>CHANGE_ME_LAB_SOAPUI_SECRET</con:clientSecret>
+      <con:authorizationURI>http://localhost:8081/realms/api-lab/protocol/openid-connect/auth</con:authorizationURI>
+      <con:accessTokenURI>http://localhost:8081/realms/api-lab/protocol/openid-connect/token</con:accessTokenURI>
+      <con:redirectURI>http://localhost:9090/callback</con:redirectURI>
+      <con:accessTokenPosition>HEADER</con:accessTokenPosition>
+      <con:oAuth2Flow>CLIENT_CREDENTIALS</con:oAuth2Flow>
+      <con:refreshAccessTokenMethod>AUTOMATIC</con:refreshAccessTokenMethod>
+      <con:scope>openid</con:scope>
+    </con:oAuth2Profile>
+  </con:oAuth2ProfileContainer>
+  <con:oAuth1ProfileContainer/>
+  <con:reporting/>
+</con:soapui-project>

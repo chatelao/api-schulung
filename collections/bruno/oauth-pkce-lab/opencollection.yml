@@ -1,0 +1,26 @@
+opencollection: 1.0.0
+info:
+  name: OAuth PKCE Lab (Authorization Code + S256)
+config:
+  proxy:
+    inherit: true
+request:
+  auth:
+    type: oauth2
+    flow: authorization_code
+    authorizationUrl: "{{authUrl}}"
+    accessTokenUrl: "{{tokenUrl}}"
+    callbackUrl: "{{callbackUrl}}"
+    credentials:
+      clientId: "{{clientId}}"
+      placement: body
+    scope: "openid profile email"
+    pkce: {}
+    tokenConfig:
+      id: keycloakPkce
+      placement:
+        header: Bearer
+      source: access_token
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: true

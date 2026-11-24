@@ -1,0 +1,43 @@
+info:
+  name: user_info_request-auth
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: "{{userInfoUrl}}"
+  auth:
+    type: oauth2
+    flow: authorization_code
+    authorizationUrl: "{{authUrl}}"
+    accessTokenUrl: "{{tokenUrl}}"
+    callbackUrl: "{{callbackUrl}}"
+    credentials:
+      clientId: "{{clientId}}"
+      placement: body
+    scope: "openid profile email"
+    pkce: {}
+    tokenConfig:
+      id: keycloakPkceReq
+      placement:
+        header: Bearer
+      source: access_token
+    settings:
+      autoFetchToken: true
+      autoRefreshToken: true
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("OIDC UserInfo ueber Request-Auth erfolgreich", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.sub).to.be.a("string");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

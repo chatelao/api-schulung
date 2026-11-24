@@ -1,0 +1,14 @@
+opencollection: 1.0.0
+info:
+  name: "DEPRECATED Legacy ROPC Audit (NUR MIGRATIONS-AUDIT)"
+config:
+  proxy:
+    inherit: true
+docs:
+  content: |-
+    # WARNUNG: Veraltetes Negativbeispiel (OAuth 2.0 ROPC)
+    Der Resource Owner Password Credentials Grant (`grant_type=password`) ist
+    durch **RFC 9700 (BCP 240)** untersagt und in **OAuth 2.1** vollständig entfernt.
+    Diese Collection dient ausschliesslich der Erkennung und Ablösung von Legacy-Clients
+    im Rahmen von Modul 10.
+  type: text/markdown

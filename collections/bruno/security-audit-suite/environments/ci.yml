@@ -1,0 +1,13 @@
+name: ci
+variables:
+  - name: kcBaseUrl
+    value: http://localhost:8081/realms/api-lab/protocol/openid-connect
+  - name: httpbinUrl
+    value: http://localhost:8180
+  - name: pkceClientId
+    value: bruno-pkce-client
+  - name: m2mClientId
+    value: m2m-service-client
+  - name: m2mClientSecret
+    value: ""
+    secret: true

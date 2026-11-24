@@ -1,0 +1,26 @@
+info:
+  name: user_info_coll-auth
+  type: http
+  seq: 1
+http:
+  method: GET
+  url: "{{userInfoUrl}}"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("OIDC UserInfo ueber Collection-Vererbung erfolgreich", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.sub).to.be.a("string");
+          expect(res.body.preferred_username).to.be.a("string");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,6 @@
+opencollection: 1.0.0
+info:
+  name: Security Audit Suite (M12 Negativtests)
+config:
+  proxy:
+    inherit: true

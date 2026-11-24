@@ -1,0 +1,27 @@
+info:
+  name: "01 Audit: Ungueltige Redirect-URI abgelehnt"
+  type: http
+  seq: 2
+  tags:
+    - audit
+    - negative
+http:
+  method: GET
+  url: "{{kcBaseUrl}}/auth?client_id={{pkceClientId}}&response_type=code&redirect_uri=https://evil-attacker.invalid/cb&scope=openid&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=S256"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "400"
+  scripts:
+    - type: tests
+      code: |-
+        test("Unbekannte redirect_uri wird mit 400 abgewiesen", function() {
+          expect(res.status).to.equal(400);
+        });
+settings:
+  encodeUrl: false
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

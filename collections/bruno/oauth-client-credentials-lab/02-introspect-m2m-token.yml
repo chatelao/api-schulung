@@ -1,0 +1,38 @@
+info:
+  name: Introspect M2M Token (RFC 7662)
+  type: http
+  seq: 2
+  tags:
+    - m10
+    - m12
+    - ci
+http:
+  method: POST
+  url: "{{introspectUrl}}"
+  body:
+    type: form-urlencoded
+    data:
+      - name: token
+        value: "{{$oauth2.m2mToken.access_token}}"
+  auth:
+    type: basic
+    username: "{{clientId}}"
+    password: "{{clientSecret}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("M2M Token ist aktiv und enthaelt erwartete Audience", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.active).to.equal(true);
+          expect(res.body.client_id).to.equal("m2m-service-client");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

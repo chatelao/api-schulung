@@ -1,0 +1,29 @@
+info:
+  name: "04 Audit: Abgelaufenes oder ungueltiges Token (401)"
+  type: http
+  seq: 5
+  tags:
+    - audit
+    - negative
+http:
+  method: GET
+  url: "{{kcBaseUrl}}/userinfo"
+  auth:
+    type: bearer
+    token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJleHBpcmVkIiwiZXhwIjoxMDAwMDAwMDAwfQ.invalidsig"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "401"
+  scripts:
+    - type: tests
+      code: |-
+        test("Abgelaufenes/ungueltiges Token liefert 401 Unauthorized", function() {
+          expect(res.status).to.equal(401);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

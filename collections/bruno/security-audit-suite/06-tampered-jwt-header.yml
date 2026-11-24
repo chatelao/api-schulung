@@ -1,0 +1,29 @@
+info:
+  name: "06 Audit: Manipulierter JWT-Payload/Header abgelehnt (401)"
+  type: http
+  seq: 8
+  tags:
+    - audit
+    - negative
+http:
+  method: GET
+  url: "{{kcBaseUrl}}/userinfo"
+  auth:
+    type: bearer
+    token: "{{tamperedJwt}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "401"
+  scripts:
+    - type: tests
+      code: |-
+        test("Manipuliertes JWT scheitert an Signaturpruefung (401)", function() {
+          expect(res.status).to.equal(401);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

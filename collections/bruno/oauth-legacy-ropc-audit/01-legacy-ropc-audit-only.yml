@@ -1,0 +1,36 @@
+info:
+  name: "LEGACY AUDIT: ROPC Password Grant (DEPRECATED)"
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: "{{tokenUrl}}"
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: password
+      - name: username
+        value: "{{username}}"
+      - name: password
+        value: "{{password}}"
+  auth:
+    type: basic
+    username: "{{clientId}}"
+    password: "{{clientSecret}}"
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Legacy ROPC Audit-Nachweis (Client muss auf PKCE migriert werden)", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.access_token).to.be.a("string");
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5
+docs: |-
+  WARNUNG: Nur zu Migrations-Audit-Zwecken gegen den isolierten Keycloak-Client
+  `legacy-ropc-audit-client`. In produktiven Systemen auf Authorization Code + PKCE migrieren!

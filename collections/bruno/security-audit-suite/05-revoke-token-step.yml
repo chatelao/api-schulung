@@ -1,0 +1,37 @@
+info:
+  name: "05 Audit: Widerruf & Introspection (active: false)"
+  type: http
+  seq: 6
+  tags:
+    - audit
+    - negative
+http:
+  method: POST
+  url: "{{kcBaseUrl}}/revoke"
+  body:
+    type: form-urlencoded
+    data:
+      - name: token
+        value: "{{validToken}}"
+      - name: token_type_hint
+        value: access_token
+  auth:
+    type: basic
+    username: "{{m2mClientId}}"
+    password: "{{m2mClientSecret}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("RFC 7009 Revocation erfolgreich ausgefuehrt (HTTP 200)", function() {
+          expect(res.status).to.equal(200);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

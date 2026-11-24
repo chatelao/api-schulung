@@ -1,0 +1,14 @@
+name: local
+variables:
+  - name: baseUrl
+    value: http://localhost:8081/realms/api-lab
+  - name: authUrl
+    value: http://localhost:8081/realms/api-lab/protocol/openid-connect/auth
+  - name: tokenUrl
+    value: http://localhost:8081/realms/api-lab/protocol/openid-connect/token
+  - name: userInfoUrl
+    value: http://localhost:8081/realms/api-lab/protocol/openid-connect/userinfo
+  - name: callbackUrl
+    value: https://oauth.usebruno.com/callback
+  - name: clientId
+    value: bruno-pkce-client

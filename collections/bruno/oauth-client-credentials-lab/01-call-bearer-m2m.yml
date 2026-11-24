@@ -1,0 +1,29 @@
+info:
+  name: Call Protected API with Inherited M2M Token
+  type: http
+  seq: 1
+  tags:
+    - m10
+    - ci
+http:
+  method: GET
+  url: "{{httpbinUrl}}/bearer"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("M2M Bearer Token wurde akzeptiert", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.authenticated).to.equal(true);
+          expect(res.body.token).to.be.a("string").and.not.empty;
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: true
+  maxRedirects: 5

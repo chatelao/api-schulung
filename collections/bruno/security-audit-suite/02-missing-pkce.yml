@@ -1,0 +1,29 @@
+info:
+  name: "02 Audit: Fehlendes PKCE abgelehnt"
+  type: http
+  seq: 3
+  tags:
+    - audit
+    - negative
+http:
+  method: GET
+  url: "{{kcBaseUrl}}/auth?client_id={{pkceClientId}}&response_type=code&redirect_uri=http://localhost:8080/callback&scope=openid"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "302"
+  scripts:
+    - type: tests
+      code: |-
+        test("Authorization Code Request ohne PKCE wird mit 302 error=invalid_request abgewiesen", function() {
+          expect(res.status).to.equal(302);
+          const location = String(res.headers.location || res.headers.Location || "");
+          expect(location).to.include("error=invalid_request");
+        });
+settings:
+  encodeUrl: false
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

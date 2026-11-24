@@ -1,0 +1,36 @@
+info:
+  name: "05b Audit: Unzureichender Scope / Widerrufenes Token abgelehnt"
+  type: http
+  seq: 7
+  tags:
+    - audit
+    - negative
+http:
+  method: POST
+  url: "{{kcBaseUrl}}/token/introspect"
+  body:
+    type: form-urlencoded
+    data:
+      - name: token
+        value: "{{validToken}}"
+  auth:
+    type: basic
+    username: "{{m2mClientId}}"
+    password: "{{m2mClientSecret}}"
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+  scripts:
+    - type: tests
+      code: |-
+        test("Widerrufenes Token wird bei Introspection als active=false gemeldet", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.active).to.equal(false);
+        });
+settings:
+  encodeUrl: true
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

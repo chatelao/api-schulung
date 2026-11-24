@@ -1,0 +1,27 @@
+info:
+  name: "03 Audit: Query-String-Token wird nicht akzeptiert"
+  type: http
+  seq: 4
+  tags:
+    - audit
+    - negative
+http:
+  method: GET
+  url: "{{httpbinUrl}}/bearer?access_token={{validToken}}"
+  auth: inherit
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "401"
+  scripts:
+    - type: tests
+      code: |-
+        test("Token im Query-String (?access_token=) wird mit 401 abgelehnt", function() {
+          expect(res.status).to.equal(401);
+        });
+settings:
+  encodeUrl: false
+  timeout: 5000
+  followRedirects: false
+  maxRedirects: 0

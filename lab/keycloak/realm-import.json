@@ -123,6 +123,17 @@
             "id.token.claim": "false",
             "access.token.claim": "true"
           }
+        },
+        {
+          "name": "m2m-introspect-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "m2m-service-client",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
         }
       ]
     },
